@@ -1,0 +1,16 @@
+{
+  "name": "cards",
+  "version": "1.0.0",
+  "description": "> **ver. 1.0** ｜ **Last edited: 2026-04-18** > ⭐ 初學者友善｜10 分鐘安裝｜跨平台（macOS / Linux / Windows WSL） > 丟一篇文章給 AI，它自動拆成一組品牌風格統一的 IG 圖卡，預覽確認後一鍵匯出 2x PNG。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

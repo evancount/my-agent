@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prototype",
+      "runtimeExecutable": "/usr/bin/ruby",
+      "runtimeArgs": ["/tmp/財顧pro/serve.rb"],
+      "port": 8080
+    },
+    {
+      "name": "nlp-hw",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/tmp/serve-nlp.py"],
+      "port": 8091
+    }
+  ]
+}
