@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>貝特森殿堂 · 保險實作活頁簿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4ecdd; --paper2:#ece0cb; --paperedge:#e3d4ba;
+  --ink:#3a2e22; --ink-soft:#6d5b46; --ink-faint:#9a8c79;
+  --line:#d8c6a6; --line-soft:#e6d9c0;
+  --accent:#a9732e; --accent2:#8c4326; --gold:#b88a3e;
+  --sage:#6a7541; --sage-bg:#e7e6cf;
+  --muted:#9a8c79; --muted-bg:#e8e0d2;
+  --shadow:rgba(58,46,34,.28);
+  --serif:"Noto Serif TC",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background:
+     radial-gradient(circle at 20% 10%, #4a3c2c, #2c231a 70%);
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:18px 10px 30px;
+  font-size:21px;line-height:1.7;
+}
+
+/* ===== Top bar ===== */
+.topbar{
+  width:100%;max-width:1060px;display:flex;align-items:center;gap:14px;
+  flex-wrap:wrap;margin-bottom:14px;color:#f3e8d4;
+}
+.brand{font-family:var(--serif);font-weight:900;font-size:23px;letter-spacing:1px;display:flex;align-items:center;gap:10px;}
+.brand .seal{background:var(--accent2);color:#f7ecd8;border-radius:8px;padding:3px 11px;font-size:18px;box-shadow:0 2px 0 #5f2c18;}
+.tabs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
+.tab{
+  font-family:var(--sans);font-weight:700;font-size:18px;cursor:pointer;
+  background:#efe2cb;color:#5a4632;border:none;border-radius:999px;
+  padding:9px 18px;transition:.18s;
+  box-shadow:0 3px 0 #b9a47f;
+}
+.tab:hover{transform:translateY(-1px);}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 3px 0 #7c5012;}
+.toolbtn{
+  font-family:var(--sans);font-weight:700;font-size:17px;cursor:pointer;
+  background:transparent;color:#f0e3cd;border:1.5px solid #b79a6e;border-radius:999px;
+  padding:8px 16px;transition:.18s;
+}
+.toolbtn:hover{background:#b79a6e;color:#2c231a;}
+
+/* ===== Book ===== */
+.stage{width:100%;max-width:1060px;perspective:2600px;}
+.book{
+  position:relative;width:100%;
+  aspect-ratio:1.34/1;
+  min-height:560px;
+  transform-style:preserve-3d;
+}
+@media(max-width:760px){.book{aspect-ratio:auto;height:78vh;min-height:520px;}}
+
+/* binder rings */
+.rings{position:absolute;left:-2px;top:0;bottom:0;width:48px;z-index:500;display:flex;flex-direction:column;justify-content:space-around;align-items:center;pointer-events:none;}
+.ring{width:30px;height:30px;border-radius:50%;background:
+   radial-gradient(circle at 35% 30%, #fff8ec, #c9b287 45%, #8c764f 75%, #5d4a2c);
+   box-shadow:0 2px 4px rgba(0,0,0,.4), inset 0 -2px 3px rgba(0,0,0,.3);}
+
+.page{
+  position:absolute;inset:0;
+  transform-origin:left center;
+  backface-visibility:hidden;
+  transition:transform .92s cubic-bezier(.36,.06,.22,1), box-shadow .6s;
+  background:
+     linear-gradient(115deg, var(--paper) 0%, var(--paper2) 100%);
+  border-radius:6px 16px 16px 6px;
+  box-shadow:0 22px 50px -12px var(--shadow);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.page.flipped{transform:rotateY(-180deg);}
+/* paper texture + spine shade + holes */
+.page::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(120,92,52,.20) 0, rgba(120,92,52,0) 60px),
+    repeating-linear-gradient(0deg, rgba(120,92,52,.025) 0 2px, transparent 2px 4px);
+}
+.page::after{ /* punched holes */
+  content:"";position:absolute;left:14px;top:0;bottom:0;width:20px;pointer-events:none;
+  background-image:radial-gradient(circle, rgba(60,46,30,.55) 0 7px, rgba(60,46,30,0) 8px);
+  background-size:20px 19%;background-position:center;background-repeat:repeat-y;
+  opacity:.5;
+}
+.page .scroll{position:relative;z-index:2;flex:1;overflow-y:auto;padding:34px 44px 30px 64px;}
+.page .scroll::-webkit-scrollbar{width:11px;}
+.page .scroll::-webkit-scrollbar-thumb{background:#cdb88f;border-radius:8px;}
+
+/* ===== Typography blocks ===== */
+.kicker{font-family:var(--sans);font-weight:700;color:var(--accent);letter-spacing:3px;font-size:16px;text-transform:uppercase;}
+h1.title{font-family:var(--serif);font-weight:900;font-size:40px;line-height:1.25;margin:6px 0 4px;color:var(--ink);}
+h2.ptitle{font-family:var(--serif);font-weight:900;font-size:30px;margin:2px 0 14px;color:var(--ink);display:flex;align-items:center;gap:12px;}
+h2.ptitle .num{background:var(--accent);color:#fff;font-family:var(--serif);font-size:21px;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 3px 0 #7c5012;}
+.lead{font-size:21px;color:var(--ink-soft);max-width:48ch;}
+.divider{height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:3px;margin:14px 0 18px;width:140px;}
+
+.note{background:rgba(169,115,46,.10);border-left:6px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:19px;color:var(--ink-soft);margin:14px 0;}
+.note b{color:var(--accent2);}
+
+/* concept cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0;}
+.card{background:#fbf5e8;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 4px 0 var(--line-soft);}
+.card .ic{font-size:30px;}
+.card h3{font-family:var(--serif);font-size:21px;margin:6px 0 4px;color:var(--accent2);}
+.card p{margin:0;font-size:18px;color:var(--ink-soft);}
+
+/* ecology diagram */
+.eco{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;}
+.eco-col{background:#fbf5e8;border:1.5px solid var(--line);border-radius:14px;padding:14px;}
+.eco-col h4{font-family:var(--serif);text-align:center;margin:0 0 10px;font-size:20px;color:var(--ink);border-bottom:2px dashed var(--line);padding-bottom:8px;}
+.chip{display:flex;align-items:center;gap:8px;border-radius:10px;padding:8px 11px;margin:7px 0;font-size:18px;font-weight:500;}
+.chip.ctrl{background:var(--sage-bg);border:1.5px solid #b6bd8a;color:#43521f;}
+.chip.unc{background:var(--muted-bg);border:1.5px solid #cbbfac;color:#6d6052;}
+.chip .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;}
+.chip.ctrl .dot{background:var(--sage);}
+.chip.unc .dot{background:var(--muted);}
+.legend{display:flex;gap:20px;justify-content:center;font-size:17px;color:var(--ink-soft);margin-top:6px;}
+.legend span{display:flex;align-items:center;gap:7px;}
+
+/* checklist (logic conditions) */
+.check{display:grid;gap:10px;margin:14px 0;}
+.check .ck{display:flex;gap:12px;align-items:flex-start;background:#fbf5e8;border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;font-size:19px;}
+.check .ck .n{background:var(--sage);color:#fff;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 auto;}
+
+/* example flow / double bind */
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:16px 0;}
+.fbox{flex:1;min-width:130px;background:#fbf5e8;border:1.5px solid var(--line);border-radius:12px;padding:13px;text-align:center;font-size:17px;display:flex;flex-direction:column;justify-content:center;}
+.fbox .t{font-family:var(--serif);font-weight:700;color:var(--accent2);font-size:18px;margin-bottom:3px;}
+.farrow{display:flex;align-items:center;color:var(--accent);font-size:26px;padding:0 4px;}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0;}
+.choice .opt{background:var(--sage-bg);border:2px solid #b6bd8a;border-radius:12px;padding:12px;text-align:center;font-weight:700;color:#43521f;font-size:18px;}
+
+/* ===== Form fields ===== */
+label.fld{display:block;font-weight:700;color:var(--ink);margin:16px 0 6px;font-size:19px;}
+label.fld .hint{font-weight:400;color:var(--ink-soft);font-size:16px;}
+input.in,textarea.in,select.in{
+  width:100%;font-family:var(--sans);font-size:19px;color:var(--ink);
+  background:#fffaf0;border:1.5px solid var(--line);border-radius:10px;
+  padding:11px 14px;outline:none;transition:.15s;
+}
+input.in:focus,textarea.in:focus,select.in:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(169,115,46,.18);}
+textarea.in{resize:vertical;min-height:64px;line-height:1.6;}
+
+table.grid{width:100%;border-collapse:collapse;margin:12px 0;font-size:18px;}
+table.grid th{background:var(--accent);color:#fff;font-weight:700;padding:10px 10px;text-align:left;font-size:17px;}
+table.grid th:first-child{border-radius:10px 0 0 0;}
+table.grid th:last-child{border-radius:0 10px 0 0;}
+table.grid td{border:1.5px solid var(--line);padding:6px;vertical-align:top;}
+table.grid input.in,table.grid textarea.in,table.grid select.in{border:1px solid var(--line-soft);border-radius:7px;padding:8px;font-size:17px;}
+table.grid textarea.in{min-height:48px;}
+.ctrlsel{font-weight:700;}
+
+/* cover */
+.cover{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px 50px 40px 70px;position:relative;z-index:2;}
+.cover .ribbon{font-family:var(--sans);letter-spacing:6px;color:var(--accent);font-weight:700;font-size:18px;}
+.cover h1{font-family:var(--serif);font-weight:900;font-size:52px;line-height:1.2;margin:14px 0;color:var(--ink);}
+.cover .sub{font-size:23px;color:var(--ink-soft);max-width:30ch;}
+.cover .palace{font-family:var(--serif);font-size:140px;color:rgba(140,67,38,.10);position:absolute;top:40px;right:50px;font-weight:900;}
+.cover .two{display:flex;gap:18px;margin:26px 0 10px;flex-wrap:wrap;justify-content:center;}
+.cover .two .a{background:#fbf5e8;border:2px solid var(--line);border-radius:14px;padding:14px 20px;max-width:280px;text-align:left;box-shadow:0 5px 0 var(--line-soft);}
+.cover .two .a .lab{font-family:var(--serif);font-weight:900;color:var(--accent2);font-size:21px;}
+.cover .two .a .d{font-size:16px;color:var(--ink-soft);}
+.cover .by{margin-top:18px;color:var(--ink-soft);font-size:19px;}
+.startbtn{margin-top:22px;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:15px 40px;font-size:22px;font-family:var(--serif);font-weight:700;cursor:pointer;box-shadow:0 5px 0 #7c5012;transition:.18s;}
+.startbtn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #7c5012;}
+
+/* back cover / rubric */
+.rubric td,.rubric th{font-size:18px;}
+
+/* ===== Nav ===== */
+.nav{width:100%;max-width:1060px;display:flex;align-items:center;justify-content:center;gap:22px;margin-top:18px;}
+.navbtn{background:#efe2cb;border:none;color:#5a4632;font-weight:700;font-size:20px;border-radius:999px;padding:12px 26px;cursor:pointer;box-shadow:0 4px 0 #b9a47f;transition:.15s;font-family:var(--sans);}
+.navbtn:hover:not(:disabled){transform:translateY(-1px);background:var(--accent);color:#fff;box-shadow:0 4px 0 #7c5012;}
+.navbtn:disabled{opacity:.4;cursor:default;}
+.counter{color:#f0e3cd;font-family:var(--serif);font-size:21px;min-width:120px;text-align:center;}
+.counter b{color:var(--gold);font-size:26px;}
+.savetag{color:#cdbb95;font-size:15px;margin-left:8px;}
+
+.tip{color:#cdbb95;font-size:15px;text-align:center;margin-top:8px;}
+
+@media print{
+  body{background:#fff;padding:0;}
+  .topbar,.nav,.rings,.tip,.startbtn{display:none!important;}
+  .stage{max-width:100%;perspective:none;}
+  .book{aspect-ratio:auto;height:auto;transform:none!important;}
+  .page{position:relative!important;inset:auto;transform:none!important;backface-visibility:visible!important;box-shadow:none;border:1px solid #ccc;page-break-after:always;margin-bottom:10px;}
+  .page::before,.page::after{display:none;}
+  .page .scroll{overflow:visible;height:auto;}
+  .cover{page-break-after:always;}
+}
+@media(max-width:760px){
+  body{font-size:19px;}
+  .page .scroll{padding:24px 20px 24px 50px;}
+  .eco,.choice{grid-template-columns:1fr;}
+  h1.title,.cover h1{font-size:32px;}
+  .cover .palace{font-size:90px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="seal">貝</span> 貝特森殿堂 · 保險實作活頁簿</div>
+  <div class="tabs">
+    <button class="tab" data-go="0">封面</button>
+    <button class="tab" data-go="1">作業一</button>
+    <button class="tab" data-go="6">作業二</button>
+    <button class="toolbtn" id="exportBtn">⬇ 匯出作答</button>
+    <button class="toolbtn" id="printBtn">🖨 列印 / 存PDF</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="book" id="book">
+    <div class="rings"><span class="ring"></span><span class="ring"></span><span class="ring"></span><span class="ring"></span><span class="ring"></span></div>
+
+    <!-- 0 COVER -->
+    <section class="page">
+      <div class="cover">
+        <div class="palace">殿堂</div>
+        <div class="ribbon">N L P · 高 階 執 行 師</div>
+        <h1>貝特森殿堂<br>保險實戰作業</h1>
+        <div class="sub">用系統思考與邏輯類型，把抽象的心智生態學變成能直接帶上戰場的兩份功課。</div>
+        <div class="two">
+          <div class="a"><div class="lab">作業一</div>銷售生態盤點 × 可控市場定位<div class="d">心智生態學 · 一元論與認識論</div></div>
+          <div class="a"><div class="lab">作業二</div>異議的邏輯分型錯誤拆解 + 生態式雙重束縛<div class="d">邏輯類型 · 雙重束縛</div></div>
+        </div>
+        <div class="by">講師 — 徐承庚　美國 NLPI 認證訓練師</div>
+        <button class="startbtn" data-go="1">翻開第一頁 →</button>
+        <div class="tip" style="margin-top:14px;color:var(--ink-soft);">作答會自動暫存於本機瀏覽器；完成後可「匯出作答」或「列印 / 存 PDF」繳交。</div>
+      </div>
+    </section>
+
+    <!-- 1 作業一 概念 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業一 · 概念</div>
+      <h1 class="title">你的客戶，其實是一個生態系</h1>
+      <div class="divider"></div>
+      <p class="lead">貝特森用<b>一元論</b>思考：先把整體看成一個「銷售生態」，再談裡面的部分。每個部分之間（部分↔部分）、部分與整體之間（部分↔整體）都在交互作用。</p>
+      <div class="cards">
+        <div class="card"><div class="ic">🏛️</div><h3>整體 = 銷售生態</h3><p>公司、商品、制度、主管、同儕、客戶、市場，全在同一個系統裡彼此影響。</p></div>
+        <div class="card"><div class="ic">🔗</div><h3>差異即訊息</h3><p>「生異之異」——客戶與你的差異，正是你能施力的訊息來源。</p></div>
+        <div class="card"><div class="ic">🎯</div><h3>聚焦可控</h3><p>判斷準則：任何事情都應該回到「你的可控」。把力氣放在可控，成交事半功倍。</p></div>
+      </div>
+      <div class="note">心智過程判斷準則：<b>「任何事情都應該是你的可控。」</b> 業務的痛苦，多半來自把精力押在不可控（景氣、客戶心情、同業殺價）。這份作業要你把生態畫清楚，再標出可控與不可控。</div>
+
+      <h2 class="ptitle" style="font-size:24px;"><span class="num" style="width:34px;height:34px;font-size:18px;">例</span>銷售生態 · 可控 / 不可控對照</h2>
+      <div class="eco">
+        <div class="eco-col"><h4>🏢 公司（部分↔整體）</h4>
+          <div class="chip ctrl"><span class="dot"></span>選擇主打哪張商品</div>
+          <div class="chip unc"><span class="dot"></span>公司制度與佣金規則</div>
+          <div class="chip ctrl"><span class="dot"></span>我對商品的熟練度</div>
+        </div>
+        <div class="eco-col"><h4>👥 銷售生態（部分↔部分）</h4>
+          <div class="chip ctrl"><span class="dot"></span>向主管請益的頻率</div>
+          <div class="chip unc"><span class="dot"></span>同儕的業績與態度</div>
+          <div class="chip ctrl"><span class="dot"></span>我的出勤與活動量</div>
+        </div>
+        <div class="eco-col"><h4>🌍 市場（部分↔整體）</h4>
+          <div class="chip unc"><span class="dot"></span>景氣與利率環境</div>
+          <div class="chip ctrl"><span class="dot"></span>我鎖定哪一群客戶</div>
+          <div class="chip unc"><span class="dot"></span>客戶當下的心情</div>
+        </div>
+      </div>
+      <div class="legend"><span><span class="dot" style="width:14px;height:14px;border-radius:50%;background:var(--sage);"></span> 可控 — 集中火力</span><span><span class="dot" style="width:14px;height:14px;border-radius:50%;background:var(--muted);"></span> 不可控 — 放下或轉化</span></div>
+    </div></section>
+
+    <!-- 2 作業一 步驟 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業一 · 怎麼做</div>
+      <h1 class="title">四個步驟，盤出你的可控市場</h1>
+      <div class="divider"></div>
+      <div class="check">
+        <div class="ck"><span class="n">1</span><div><b>畫生態</b>　把你的銷售世界拆成「公司／銷售生態／市場」三區，各自列出 3 個關鍵節點，並標明它屬於「部分↔部分」還是「部分↔整體」。</div></div>
+        <div class="ck"><span class="n">2</span><div><b>貼標籤</b>　替每個節點貼上<span style="color:var(--sage);font-weight:700;">可控</span>或<span style="color:var(--muted);font-weight:700;">不可控</span>。</div></div>
+        <div class="ck"><span class="n">3</span><div><b>定義可控客戶</b>　從可控象限萃取「最好成交的客戶」特徵，列出一份優先開發名單。</div></div>
+        <div class="ck"><span class="n">4</span><div><b>轉化與行動</b>　反思精力浪費在哪些不可控、能否轉成可控，並排出本週 3 個動作。</div></div>
+      </div>
+      <div class="note">填寫提醒：右側欄位都可直接打字，系統會自動暫存。<b>慢慢寫沒關係，這份盤點會直接決定你下一週跑誰。</b></div>
+    </div></section>
+
+    <!-- 3 作業一 作答A 生態盤點 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業一 · 作答 ①</div>
+      <h2 class="ptitle"><span class="num">A</span>畫出你的銷售生態</h2>
+      <p class="lead">每區填 3 個關鍵節點，選擇關聯型態與可控性。</p>
+      <table class="grid">
+        <thead><tr><th style="width:24%">區塊</th><th style="width:34%">關鍵節點</th><th style="width:22%">關聯型態</th><th style="width:20%">可控性</th></tr></thead>
+        <tbody id="ecoBody"></tbody>
+      </table>
+      <div class="tip" style="color:var(--ink-soft);text-align:left;">「關聯型態」：部分↔部分（如同儕關係）／部分↔整體（如我與公司、客戶與市場）。</div>
+    </div></section>
+
+    <!-- 4 作業一 作答B 可控客戶 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業一 · 作答 ②</div>
+      <h2 class="ptitle"><span class="num">B</span>定義「可控客戶」與名單</h2>
+      <label class="fld">我的「可控客戶」具備這些特徵 <span class="hint">（行業 / 緣故深淺 / 有無決策權 / 信任基礎…）</span></label>
+      <textarea class="in" data-k="a1_ctrlfeature" rows="3" placeholder="例：認識三年以上、家庭剛有新生兒、自己能拍板、之前服務過有好印象…"></textarea>
+      <label class="fld">優先開發名單（依「最好成交」排序）</label>
+      <table class="grid">
+        <thead><tr><th style="width:8%">#</th><th style="width:26%">姓名 / 代號</th><th style="width:34%">為什麼是可控</th><th style="width:32%">切入的商品 / 角度</th></tr></thead>
+        <tbody id="listBody"></tbody>
+      </table>
+    </div></section>
+
+    <!-- 5 作業一 反思行動 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業一 · 作答 ③</div>
+      <h2 class="ptitle"><span class="num">C</span>轉化不可控 · 本週行動</h2>
+      <label class="fld">我過去把最多精力浪費在哪些「不可控」上？</label>
+      <textarea class="in" data-k="a1_waste" rows="3" placeholder="例：一直擔心景氣、糾結同業降價、在意客戶已讀不回…"></textarea>
+      <label class="fld">其中哪些可以「轉成可控」？怎麼轉？</label>
+      <textarea class="in" data-k="a1_convert" rows="3" placeholder="例：景氣不可控→我能控制每天約訪量；客戶心情不可控→我能控制開場的問句設計…"></textarea>
+      <label class="fld">本週 3 個可控動作（明確、可執行）</label>
+      <table class="grid">
+        <thead><tr><th style="width:8%">#</th><th style="width:54%">我要做的具體動作</th><th style="width:38%">完成時間</th></tr></thead>
+        <tbody id="actBody"></tbody>
+      </table>
+      <div class="note">完成這頁，你已經把「貝特森的系統觀」變成一份能執行的市場定位。<b>記得按上方「匯出作答」或「列印 / 存 PDF」繳交。</b></div>
+    </div></section>
+
+    <!-- 6 作業二 概念 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業二 · 概念</div>
+      <h1 class="title">客戶的拒絕，常是一場「邏輯分型錯誤」</h1>
+      <div class="divider"></div>
+      <p class="lead">貝特森：<b>「一個類別，不能等同於它底下的項目之一。」</b> 客戶把一次賠錢的經驗（細目），等同於整個商品種類（類別）——這就是層級錯置。看懂錯在哪，你就有施力點。</p>
+      <div class="cards">
+        <div class="card"><div class="ic">🗺️</div><h3>地圖當疆域</h3><p>「保險就是浪費錢」——把一張保單（地圖），當成風險本身（疆域）。</p></div>
+        <div class="card"><div class="ic">⏳</div><h3>混淆因果 / 時間</h3><p>「我還年輕不需要保險」——把時間順序硬接成因果。</p></div>
+        <div class="card"><div class="ic">🪜</div><h3>層級錯置</h3><p>「投資型保單就是垃圾」——一次經驗 = 整個種類，向上錯誤歸類。</p></div>
+      </div>
+      <h2 class="ptitle" style="font-size:24px;"><span class="num" style="width:34px;height:34px;font-size:17px;">✓</span>符合條件的邏輯類型 · 四檢核</h2>
+      <div class="check">
+        <div class="ck"><span class="n">1</span><div>不包含<b>因果、時間</b></div></div>
+        <div class="ck"><span class="n">2</span><div>高層級為低層級的<b>向上歸類</b></div></div>
+        <div class="ck"><span class="n">3</span><div>層級<b>可任意錯置</b>仍成立</div></div>
+        <div class="ck"><span class="n">4</span><div>使用者<b>不受雙重束縛</b></div></div>
+      </div>
+      <div class="note"><b>雙重束縛 (Double Bind)</b>：後設思考 × 邏輯分型錯誤的交互作用——讓對方「選哪一個都為難」。我們要做的，是把客戶從錯誤的雙重束縛中鬆綁，再用一個<b>對他有利的二選一</b>引導前進。</div>
+    </div></section>
+
+    <!-- 7 作業二 範例 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業二 · 示範</div>
+      <h1 class="title">一個異議，這樣拆、這樣回</h1>
+      <div class="divider"></div>
+      <div class="note" style="border-color:var(--accent2);background:rgba(140,67,38,.08);">
+        客戶說：<b>「投資型保單就是垃圾！」</b>
+      </div>
+      <div class="flow">
+        <div class="fbox"><div class="t">原句</div>一次賠錢經驗</div>
+        <div class="farrow">→</div>
+        <div class="fbox"><div class="t">錯在哪</div>層級錯置<br><span style="font-size:14px;color:var(--ink-soft)">細目＝整個種類</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><div class="t">系統名詞</div>投資歸投資<br>保險歸保險</div>
+        <div class="farrow">→</div>
+        <div class="fbox" style="background:var(--sage-bg);border-color:#b6bd8a;"><div class="t" style="color:#43521f;">重寫回應</div>分開來看，幫你拆清楚</div>
+      </div>
+      <p class="lead" style="margin-top:8px;">重寫示範：「賠錢的是<b>當時那一檔標的</b>，不是<b>整個工具</b>。我們把『投資』跟『保障』分開看——你不滿意的是報酬，還是保障這件事本身？」</p>
+
+      <h2 class="ptitle" style="font-size:23px;margin-top:18px;"><span class="num" style="width:34px;height:34px;font-size:17px;">⇄</span>生態式二選一（鬆綁後再前進）</h2>
+      <div class="flow">
+        <div class="fbox"><div class="t">正向意圖</div>他怕的是「再賠一次」</div>
+        <div class="farrow">→</div>
+        <div class="fbox"><div class="t">避免最糟 X</div>退休時沒有保障</div>
+      </div>
+      <div class="choice">
+        <div class="opt">方案 A<br><span style="font-weight:400;font-size:16px;">先用保障型把底盤顧好</span></div>
+        <div class="opt">方案 B<br><span style="font-weight:400;font-size:16px;">保障＋少量穩健配置</span></div>
+      </div>
+      <p class="lead">「為了避免退休時沒保障（X），你會想先從<b>A 顧底盤</b>開始，還是<b>B 一起配置</b>？」——兩個選項都通往成交，且對客戶都是好的。</p>
+    </div></section>
+
+    <!-- 8 作業二 作答 異議拆解 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業二 · 作答 ①</div>
+      <h2 class="ptitle"><span class="num">A</span>異議拆解表 <span style="font-size:18px;font-weight:400;color:var(--ink-soft)">（3 銷售 + 3 增員）</span></h2>
+      <table class="grid">
+        <thead><tr><th style="width:6%">#</th><th style="width:26%">真實異議原句</th><th style="width:24%">錯在哪</th><th style="width:44%">重寫成不讓對方為難的回應</th></tr></thead>
+        <tbody id="objBody"></tbody>
+      </table>
+      <div class="tip" style="color:var(--ink-soft);text-align:left;">「錯在哪」可選：地圖當疆域 / 混淆因果 / 混淆時間 / 層級錯置 / 不算錯誤。</div>
+    </div></section>
+
+    <!-- 9 作業二 作答 二選一 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業二 · 作答 ②</div>
+      <h2 class="ptitle"><span class="num">B</span>設計你的生態式二選一</h2>
+      <p class="lead">挑一個你最常遇到的成交或增員場景，設計一組對方怎麼選都好的引導。</p>
+      <label class="fld">場景 <span class="hint">（成交 or 增員？對象是誰？）</span></label>
+      <input class="in" data-k="a2_scene" placeholder="例：緣故客戶，30 歲新手爸爸，猶豫要不要加保…">
+      <label class="fld">① 對方的正向意圖（他真正在乎 / 害怕的是什麼）</label>
+      <textarea class="in" data-k="a2_intent" rows="2" placeholder="例：怕保費變負擔，但又怕孩子沒保障…"></textarea>
+      <label class="fld">② 他最怕發生的最糟情況 X</label>
+      <input class="in" data-k="a2_worst" placeholder="例：萬一自己倒下，家庭收入斷掉">
+      <div class="choice" style="margin-top:14px;">
+        <div><label class="fld" style="margin-top:0;color:#43521f;">方案 A</label><textarea class="in" data-k="a2_optA" rows="2" placeholder="低門檻、好說 yes 的選項"></textarea></div>
+        <div><label class="fld" style="margin-top:0;color:#43521f;">方案 B</label><textarea class="in" data-k="a2_optB" rows="2" placeholder="進階一點、同樣通往目標的選項"></textarea></div>
+      </div>
+      <label class="fld">③ 完整二選一話術（把上面串成一句）</label>
+      <textarea class="in" data-k="a2_script" rows="3" placeholder="「為了避免（X）發生，你會想先從（A）開始，還是（B）？」"></textarea>
+    </div></section>
+
+    <!-- 10 作業二 自評 -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">作業二 · 自評</div>
+      <h2 class="ptitle"><span class="num">✓</span>四檢核自評</h2>
+      <p class="lead">逐一檢查你的重寫回應與二選一話術，是否守住四個條件。</p>
+      <table class="grid">
+        <thead><tr><th style="width:60%">檢核條件</th><th style="width:18%">符合？</th><th style="width:22%">不符的話，怎麼修</th></tr></thead>
+        <tbody id="selfBody"></tbody>
+      </table>
+      <label class="fld">一句話總結：這次練習我最大的收穫</label>
+      <textarea class="in" data-k="a2_takeaway" rows="2" placeholder="..."></textarea>
+      <div class="note">繳交方式：上方「匯出作答」會把整本答案存成檔；或用「列印 / 存 PDF」輸出整本活頁簿。</div>
+    </div></section>
+
+    <!-- 11 BACK / RUBRIC -->
+    <section class="page"><div class="scroll">
+      <div class="kicker">講師批改 · 評分標準</div>
+      <h1 class="title">兩份作業的評分重點</h1>
+      <div class="divider"></div>
+      <h2 class="ptitle" style="font-size:23px;"><span class="num" style="width:34px;height:34px;font-size:17px;">1</span>銷售生態盤點 × 可控市場定位</h2>
+      <table class="grid rubric">
+        <thead><tr><th>評分向度</th><th style="width:18%">配分</th><th>看什麼</th></tr></thead>
+        <tbody>
+          <tr><td>生態完整度</td><td>30</td><td>三區皆有節點，關聯型態判斷正確</td></tr>
+          <tr><td>可控判斷</td><td>30</td><td>可控／不可控分類合理，不含混</td></tr>
+          <tr><td>可控客戶定義</td><td>20</td><td>特徵具體、名單可執行</td></tr>
+          <tr><td>轉化與行動</td><td>20</td><td>能把不可控轉成可控，行動明確</td></tr>
+        </tbody>
+      </table>
+      <h2 class="ptitle" style="font-size:23px;margin-top:16px;"><span class="num" style="width:34px;height:34px;font-size:17px;">2</span>邏輯分型錯誤 + 生態式雙重束縛</h2>
+      <table class="grid rubric">
+        <thead><tr><th>評分向度</th><th style="width:18%">配分</th><th>看什麼</th></tr></thead>
+        <tbody>
+          <tr><td>判斷正確</td><td>30</td><td>6 個異議的錯誤類型判斷正確</td></tr>
+          <tr><td>重構品質</td><td>30</td><td>重寫能解除對方雙重束縛、不說教</td></tr>
+          <tr><td>二選一設計</td><td>25</td><td>兩選項都通往成交，且對客戶有利</td></tr>
+          <tr><td>四檢核自評</td><td>15</td><td>能誠實檢核並提出修正</td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="text-align:center;">「<b>彈性就是影響力</b>」——當你看懂系統，就有更多選擇。<br>祝你在貝特森的殿堂裡，找到屬於自己的成交節奏。</div>
+    </div></section>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="navbtn" id="prevBtn">← 上一頁</button>
+  <div class="counter">第 <b id="curNum">1</b> / <span id="totNum">12</span> 頁<span class="savetag" id="saveTag"></span></div>
+  <button class="navbtn" id="nextBtn">下一頁 →</button>
+</div>
+<div class="tip">用鍵盤 ← → 也可翻頁　·　作答自動暫存於本機</div>
+
+<script>
+const pages=[...document.querySelectorAll('.page')];
+const N=pages.length;
+let cur=0, animating=false;
+document.getElementById('totNum').textContent=N;
+
+function render(){
+  pages.forEach((p,i)=>{
+    p.classList.toggle('flipped', i<cur);
+    p.style.zIndex = (i<cur) ? i : (N - i); // current on top among unturned
+  });
+  document.getElementById('curNum').textContent=cur+1;
+  document.getElementById('prevBtn').disabled = cur===0;
+  document.getElementById('nextBtn').disabled = cur===N-1;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  let tg=0; if(cur>=1&&cur<=5)tg=1; else if(cur>=6)tg=6; else tg=0;
+  const at=document.querySelector('.tab[data-go="'+tg+'"]'); if(at)at.classList.add('active');
+}
+function go(i){
+  i=Math.max(0,Math.min(N-1,i));
+  if(i===cur||animating)return;
+  animating=true; cur=i; render();
+  // scroll inner to top
+  const sc=pages[cur].querySelector('.scroll'); if(sc)sc.scrollTop=0;
+  setTimeout(()=>animating=false,500);
+}
+document.getElementById('nextBtn').onclick=()=>go(cur+1);
+document.getElementById('prevBtn').onclick=()=>go(cur-1);
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,textarea,select'))return;
+  if(e.key==='ArrowRight')go(cur+1);
+  if(e.key==='ArrowLeft')go(cur-1);
+});
+
+/* ---- build repeating table rows ---- */
+function rows(tbody,n,cells){
+  const tb=document.getElementById(tbody);
+  for(let r=1;r<=n;r++){
+    const tr=document.createElement('tr');
+    tr.innerHTML=cells(r);
+    tb.appendChild(tr);
+  }
+}
+const ctrlSelect=k=>`<select class="in ctrlsel" data-k="${k}"><option value=""></option><option>可控</option><option>不可控</option></select>`;
+const relSelect=k=>`<select class="in" data-k="${k}"><option value=""></option><option>部分↔部分</option><option>部分↔整體</option></select>`;
+const errSelect=k=>`<select class="in" data-k="${k}"><option value=""></option><option>地圖當疆域</option><option>混淆因果</option><option>混淆時間</option><option>層級錯置</option><option>不算錯誤</option></select>`;
+const okSelect=k=>`<select class="in" data-k="${k}"><option value=""></option><option>✓ 符合</option><option>✗ 待修</option></select>`;
+
+// 作業一 生態盤點: 3 區 x 一些列
+const ecoRegions=['🏢 公司','🏢 公司','👥 銷售生態','👥 銷售生態','🌍 市場','🌍 市場'];
+const ecoTb=document.getElementById('ecoBody');
+ecoRegions.forEach((reg,idx)=>{
+  const r=idx+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="font-weight:700;color:var(--ink-soft)">${reg}</td>
+   <td><input class="in" data-k="eco_node_${r}" placeholder="關鍵節點"></td>
+   <td>${relSelect('eco_rel_'+r)}</td>
+   <td>${ctrlSelect('eco_ctrl_'+r)}</td>`;
+  ecoTb.appendChild(tr);
+});
+
+rows('listBody',5,r=>`<td style="text-align:center;font-weight:700">${r}</td>
+  <td><input class="in" data-k="list_name_${r}"></td>
+  <td><textarea class="in" data-k="list_why_${r}"></textarea></td>
+  <td><textarea class="in" data-k="list_angle_${r}"></textarea></td>`);
+
+rows('actBody',3,r=>`<td style="text-align:center;font-weight:700">${r}</td>
+  <td><input class="in" data-k="act_do_${r}"></td>
+  <td><input class="in" data-k="act_when_${r}" placeholder="如：週三前"></td>`);
+
+const objTags=['銷售','銷售','銷售','增員','增員','增員'];
+const objTb=document.getElementById('objBody');
+objTags.forEach((tag,idx)=>{
+  const r=idx+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="text-align:center;font-weight:700;color:var(--accent2)">${r}<br><span style="font-size:13px;color:var(--ink-soft)">${tag}</span></td>
+   <td><textarea class="in" data-k="obj_q_${r}"></textarea></td>
+   <td>${errSelect('obj_err_'+r)}</td>
+   <td><textarea class="in" data-k="obj_re_${r}"></textarea></td>`;
+  objTb.appendChild(tr);
+});
+
+const selfItems=['不包含因果、時間','高層級為低層級的向上歸類','層級可任意錯置','使用者不受雙重束縛'];
+const selfTb=document.getElementById('selfBody');
+selfItems.forEach((it,idx)=>{
+  const r=idx+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="font-weight:600">${r}. ${it}</td>
+   <td>${okSelect('self_ok_'+r)}</td>
+   <td><input class="in" data-k="self_fix_${r}"></td>`;
+  selfTb.appendChild(tr);
+});
+
+/* ---- autosave ---- */
+const STORE='bateson_book_v1';
+let data={};
+try{data=JSON.parse(localStorage.getItem(STORE)||'{}');}catch(e){}
+function bind(){
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    if(data[k]!==undefined)el.value=data[k];
+    el.addEventListener('input',()=>{
+      data[k]=el.value;
+      try{localStorage.setItem(STORE,JSON.stringify(data));
+        const t=document.getElementById('saveTag');t.textContent='✓ 已暫存';
+        clearTimeout(window._st);window._st=setTimeout(()=>t.textContent='',1200);
+      }catch(e){}
+    });
+  });
+}
+bind();
+
+/* export */
+document.getElementById('exportBtn').onclick=()=>{
+  let out='貝特森殿堂 · 保險實作活頁簿 — 作答匯出\\n'+new Date().toLocaleString()+'\\n\\n';
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const lab=el.closest('td')?'['+el.dataset.k+']':el.dataset.k;
+    const v=(el.value||'').trim();
+    if(v)out+=el.dataset.k+': '+v+'\\n';
+  });
+  const blob=new Blob([out],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='貝特森作業_作答.txt';a.click();
+};
+document.getElementById('printBtn').onclick=()=>window.print();
+
+render();
+</script>
+</body>
+</html>
