@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四貸同堂＋0050 正2 槓桿健檢試算｜徐老師</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f5f7; --surface:#ffffff; --ink:#1d1d1f; --ink2:#6e6e73; --ink3:#86868b;
+    --line:rgba(0,0,0,0.08); --indigo:#1E1B4B; --amber:#B7791F; --amberbg:#FDF6E3;
+    --red:#D93A2B; --redbg:#FDEEEC; --green:#1A7F55; --fill:#f0f0f3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:16px}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans TC",sans-serif;
+    background:linear-gradient(168deg,#eceaf7 0%,#f4f3f8 38%,#f6f4f0 70%,#fdf4e4 100%);
+    background-attachment:fixed;color:var(--ink);min-height:100vh;padding:0 18px 64px;
+    -webkit-font-smoothing:antialiased;letter-spacing:-0.01em;}
+  .wrap{max-width:580px;margin:0 auto}
+  .fontctl{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;align-items:center;
+    gap:8px;padding:12px 0 10px;margin-bottom:8px;
+    background:linear-gradient(180deg,#f1eff7 60%,rgba(241,239,247,0));}
+  .fontctl .t{font-size:0.875rem;color:var(--ink3);margin-right:2px}
+  .fontctl .lv{font-size:0.875rem;color:var(--indigo);font-weight:500;min-width:2.6em;text-align:center}
+  .fontctl button{font-family:inherit;background:#fff;border:1px solid var(--line);color:var(--indigo);
+    font-weight:700;border-radius:11px;cursor:pointer;padding:7px 13px;line-height:1;
+    box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:background .12s,transform .08s}
+  .fontctl button:active{transform:scale(0.94)}
+  .fontctl button:hover{background:var(--amberbg)}
+  .fontctl button:disabled{opacity:0.35;cursor:default}
+  .fontctl button.am{font-size:0.85rem}
+  .fontctl button.ap{font-size:1.15rem}
+  .eyebrow{display:inline-block;font-size:1rem;font-weight:500;color:var(--amber);letter-spacing:0.03em;
+    margin-bottom:16px;background:var(--amberbg);padding:8px 16px;border-radius:22px}
+  h1{font-size:2.5rem;font-weight:700;line-height:1.15;letter-spacing:-0.02em;margin-bottom:16px}
+  h1 .g{color:var(--indigo);font-weight:700}
+  h1 .a{color:var(--amber);font-weight:700}
+  .sub{color:var(--ink2);font-size:1.25rem;line-height:1.65;margin-bottom:36px;font-weight:400}
+  .hl{background:linear-gradient(transparent 58%,#FBE3A6 58%);padding:0 2px;font-weight:500;color:var(--ink)}
+  .hi{background:linear-gradient(transparent 58%,#D9D7F0 58%);padding:0 2px;font-weight:500;color:var(--indigo)}
+  .card{background:var(--surface);border-radius:20px;padding:24px 22px;margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04),0 8px 24px rgba(0,0,0,0.05);
+    border:1px solid rgba(255,255,255,0.7)}
+  .card h2{font-size:1.125rem;font-weight:700;color:var(--indigo);letter-spacing:0.01em;margin-bottom:20px;
+    display:flex;justify-content:space-between;align-items:baseline}
+  .card h2 .lbl{display:flex;align-items:center}
+  .card h2 .lbl::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;
+    background:var(--amber);margin-right:10px}
+  .card h2 span{color:var(--ink3);font-size:0.9375rem;font-weight:400}
+  .field{margin-bottom:18px}
+  label{display:block;font-size:1.0625rem;color:var(--ink2);margin-bottom:9px;font-weight:400}
+  .row{display:flex;gap:12px}
+  .row .field{flex:1;margin-bottom:18px}
+  input[type=number]{width:100%;background:var(--fill);border:1px solid transparent;
+    color:var(--ink);font-size:1.3125rem;font-weight:500;font-family:inherit;
+    padding:15px 16px;border-radius:12px;outline:none;transition:border-color .15s,background .15s}
+  input[type=number]:focus{border-color:var(--indigo);background:#fff;box-shadow:0 0 0 4px rgba(30,27,75,0.08)}
+  .loan{display:flex;gap:12px;align-items:flex-end;margin-bottom:18px}
+  .loan:last-child{margin-bottom:0}
+  .loan .lname{width:84px;flex-shrink:0;font-size:1.125rem;font-weight:500;color:var(--ink);padding-bottom:15px}
+  .loan .field{flex:1;margin-bottom:0}
+  .loan .field:nth-child(3){flex:0 0 110px}
+  .hint{font-size:0.875rem;color:var(--ink3);line-height:1.65;margin-top:14px;
+    background:var(--fill);border-radius:12px;padding:12px 14px}
+  .big{background:linear-gradient(180deg,#FDEEEC 0%,#ffffff 70%);border-radius:20px;
+    padding:30px 24px;text-align:center;margin-bottom:16px;border:1px solid #F6D3CE;
+    box-shadow:0 1px 3px rgba(217,58,43,0.06),0 10px 28px rgba(217,58,43,0.08)}
+  .big .lbl{font-size:1.125rem;color:var(--ink2);margin-bottom:10px}
+  .big .num{font-size:4.75rem;font-weight:700;color:var(--red);line-height:1;letter-spacing:-0.03em}
+  .big .note{font-size:1rem;color:var(--ink3);margin-top:14px;line-height:1.55}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .stat{background:var(--surface);border-radius:16px;padding:20px;border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 1px 3px rgba(0,0,0,0.04),0 6px 18px rgba(0,0,0,0.03)}
+  .stat .k{font-size:1rem;color:var(--ink3);margin-bottom:9px;font-weight:400;display:flex;align-items:center}
+  .stat .k::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--indigo);margin-right:8px;flex-shrink:0}
+  .stat.red .k::before{background:var(--red)}
+  .stat .v{font-size:1.875rem;font-weight:700;color:var(--ink);letter-spacing:-0.02em}
+  .stat .v small{font-size:0.9375rem;font-weight:400;color:var(--ink3);letter-spacing:0}
+  .stat.red .v{color:var(--red)}
+  .breakdown{font-size:1rem;color:var(--ink2);line-height:1.75;margin-bottom:16px;
+    background:var(--surface);border-radius:16px;padding:18px 20px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+  .breakdown b{color:var(--ink3);font-weight:500;display:block;margin-bottom:5px;font-size:0.9375rem;letter-spacing:0.02em}
+  .verdict{background:var(--amberbg);border-radius:16px;padding:20px 22px;font-size:1.125rem;
+    line-height:1.75;color:#7a5512;margin-bottom:20px}
+  .verdict b{color:var(--amber);font-weight:700}
+  .quote{text-align:center;font-size:1.5625rem;font-weight:700;color:var(--ink);
+    margin:32px 0 6px;line-height:1.5;letter-spacing:-0.02em}
+  .foot{text-align:center;color:var(--ink3);font-size:0.9375rem;line-height:1.75;margin-top:28px;
+    border-top:1px solid var(--line);padding-top:22px}
+  .foot b{color:var(--ink2);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="fontctl">
+    <span class="t">字級</span>
+    <button class="am" id="fdec" aria-label="縮小字級">A−</button>
+    <span class="lv" id="flv">標準</span>
+    <button class="ap" id="finc" aria-label="放大字級">A＋</button>
+  </div>
+  <div class="eyebrow">槓桿健檢 · 你到底壓著幾倍？</div>
+  <h1>四貸同堂＋<span class="g">0050 正2</span><br>你的<span class="a">淨有效槓桿</span>試算</h1>
+  <p class="sub">標示 2 倍是廣告，<span class="hl">淨有效槓桿才是帳單</span>。把你的數字填進去，算一次就知道——<span class="hi">你撐不撐得過一次回檔</span>。</p>
+
+  <div class="card">
+    <h2><span class="lbl">本金</span><span>單位：萬元</span></h2>
+    <div class="field">
+      <label>自有資金（你自己的錢）</label>
+      <input type="number" id="equity" value="100" min="1">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="lbl">四貸同堂</span><span>各自的金額與年利率</span></h2>
+    <div class="loan"><div class="lname">房貸</div>
+      <div class="field"><label>金額(萬)</label><input type="number" id="l1" value="140" min="0"></div>
+      <div class="field"><label>年利率(%)</label><input type="number" id="r1" value="2.1" min="0" step="0.1"></div>
+    </div>
+    <div class="loan"><div class="lname">信貸</div>
+      <div class="field"><label>金額(萬)</label><input type="number" id="l2" value="80" min="0"></div>
+      <div class="field"><label>年利率(%)</label><input type="number" id="r2" value="5.5" min="0" step="0.1"></div>
+    </div>
+    <div class="loan"><div class="lname">股票質押</div>
+      <div class="field"><label>金額(萬)</label><input type="number" id="l3" value="60" min="0"></div>
+      <div class="field"><label>年利率(%)</label><input type="number" id="r3" value="3.5" min="0" step="0.1"></div>
+    </div>
+    <div class="loan"><div class="lname">保單借款</div>
+      <div class="field"><label>金額(萬)</label><input type="number" id="l4" value="20" min="0"></div>
+      <div class="field"><label>年利率(%)</label><input type="number" id="r4" value="4.0" min="0" step="0.1"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="lbl">市場情境</span><span>原型＝0050／台灣50</span></h2>
+    <div class="row">
+      <div class="field"><label>原型指數整段報酬 (%)</label><input type="number" id="ridx" value="0" step="1"></div>
+      <div class="field"><label>年化波動率 (%)</label><input type="number" id="vol" value="20" min="0" step="1"></div>
+    </div>
+    <div class="field"><label>持有天數 (天)</label><input type="number" id="days" value="365" min="1"></div>
+    <p class="hint"><b style="color:var(--indigo)">不知道怎麼填？照這樣填就好</b><br>· <b>原型指數報酬</b>：你猜這段期間「台灣 50」會漲或跌幾 %。不確定就填 <b>0</b>（＝原地踏步）。<br>· <b>年化波動率</b>：市場「上下震盪」有多兇——不是漲跌幅，是每天跳動的劇烈程度。不會估就直接選參考值：<b>台股平常約 18–22%（台指 VIX 常在 20% 以上）、平靜期約 15%、動盪期 30% 以上</b>。<br>· <b>持有天數</b>：你打算抱多久（一年就填 365）。<br>波動越大、耗損越大：盤整一年，正2 大約 15%→−2.2%、<b>20%（台股常態）→−3.9%</b>、30%→−8.6%、50%→−22%。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="lbl">股票質押 · 追繳／斷頭線</span><span>維持率 ＝ 帳面 ÷ 借款</span></h2>
+    <div class="row">
+      <div class="field"><label>股票帳面價值 (萬)</label><input type="number" id="pv" value="100" min="0"></div>
+      <div class="field"><label>斷頭維持率 (%)（追繳固定 130%）</label><input type="number" id="cutm" value="120" min="1" step="1"></div>
+    </div>
+    <p class="hint"><b style="color:var(--indigo)">怎麼填？</b><br>· <b>股票帳面價值</b>：你拿去質押的股票，現在市值多少（例：100 萬）。<br>· <b>質押借款</b>：<b>自動帶入上方四貸同堂的「股票質押」金額</b>，兩處永遠一致（要改請改上面那格）。<br>· <b>斷頭維持率</b>：各家契約不同，常見 120–130%；追繳線一律以法定 130% 計。</p>
+    <div id="pledgeout"></div>
+  </div>
+
+  <div class="results" id="out"></div>
+
+  <div class="quote">「指數回家了，<span class="hl">你的錢沒回家</span>。」</div>
+
+  <div class="foot">
+    <b>徐承庚｜財商研究所</b><br>
+    本工具僅針對台股 0050 正2（原型＝台灣 50 指數）。波動耗損採模型估算：正2 ≈（1＋原型報酬）² × e^(−波動率²×期間) − 1，並疊加你的財務槓桿與分筆利息。未涵蓋每日複利全路徑、內扣費用、稅費與正逆價差。「8% 門檻」為長期回測參考、會隨借貸利率變動，非保證。<br>
+    僅供風險教育，<b>非投資建議、非報酬保證</b>，實際結果以市場與各貸款契約為準。
+  </div>
+</div>
+
+<script>
+  const ids=['equity','l1','l2','l3','l4','r1','r2','r3','r4','days','ridx','vol','pv','cutm'];
+  const $=id=>document.getElementById(id);
+  function num(id){const v=parseFloat($(id).value);return isNaN(v)?0:v;}
+  function fmt(n,d=1){return (n>0?'+':'')+n.toFixed(d);}
+  function calc(){
+    const eq=Math.max(num('equity'),0.0001);
+    const loans=[['房貸','l1','r1'],['信貸','l2','r2'],['股票質押','l3','r3'],['保單借款','l4','r4']];
+    const days=Math.max(num('days'),1);
+    const T=days/365;
+    let debt=0, interest=0, breakdown=[];
+    loans.forEach(([nm,la,ra])=>{
+      const amt=num(la), rt=num(ra);
+      const intr=amt*(rt/100)*T;
+      debt+=amt; interest+=intr;
+      if(amt>0) breakdown.push(`${nm} ${amt}萬 @ ${rt}% = ${intr.toFixed(2)}萬`);
+    });
+    const pos=eq+debt;
+    const L=pos/eq;
+    const perceived=L*2;
+    const blended=debt>0?(interest/T)/debt*100:0;
+
+    // 公開說明書模型：正2 ≈ (1+原型報酬)² × e^(−波動率²×T) − 1
+    const Ridx=num('ridx')/100;
+    const sigma=num('vol')/100;
+    const drag=Math.exp(-sigma*sigma*T);          // 波動耗損係數
+    const dragPct=(drag-1)*100;                    // 純波動耗損（對正2部位）
+    const r=Math.pow(1+Ridx,2)*drag-1;             // 正2 期間報酬
+    const equityRet=r*L;                           // 對本金影響（不含息）
+    const interestPct=interest/eq*100;
+    const net=equityRet*100-interestPct;           // 淨本金影響
+    const annR=(Math.pow(1+Ridx,1/T)-1)*100;       // 原型年化報酬（對照 8% 門檻）
+    const posWipe=100/L;
+    const idxWipe=posWipe/2;
+
+    // ── 股票質押追繳／斷頭（借款＝上方四貸同堂的「股票質押」）──
+    const pv=num('pv'), plq=num('l3'), cutm=Math.max(num('cutm'),1);
+    const g=x=> x>0?x.toFixed(0):'0';
+    let ph='', pledgeLine='';
+    if(pv>0 && plq>0){
+      const M0=pv/plq*100;
+      const s130=(1-1.30*plq/pv)*100;
+      const sCut=(1-(cutm/100)*plq/pv)*100;
+      const cve=plq/pv*100;
+      const dropTxt=x=> x<=0?'已跌破':`再跌 ${x.toFixed(0)}%`;
+      const idx130=s130/2, idxCut=sCut/2;
+      const stateNote = M0<130?'　目前維持率已低於 130%，隨時會被追繳。':(M0<cutm?'　目前維持率已低於斷頭線。':'');
+      pledgeLine=`<br><br><b>股票質押追繳：</b>你這 ${plq} 萬股票質押（擔保股票帳面 ${pv} 萬、維持率 ${M0.toFixed(0)}%），那檔股票再跌 <b>${g(s130)}%</b> 就 130% 追繳、再跌 <b>${g(sCut)}%</b> 斷頭；若質押標的是正2，原型只要跌約 <b>${g(idx130)}%</b>／<b>${g(idxCut)}%</b>。`;
+      ph=`
+      <div class="grid" style="margin-top:16px">
+        <div class="stat"><div class="k">目前質押維持率</div><div class="v">${M0.toFixed(0)}<small>%（成數 ${cve.toFixed(0)}%）</small></div></div>
+        <div class="stat red"><div class="k">追繳線 130%（要補錢）</div><div class="v" style="font-size:1.4rem">${dropTxt(s130)}</div></div>
+        <div class="stat red"><div class="k">斷頭線 ${cutm.toFixed(0)}%（直接處分）</div><div class="v" style="font-size:1.4rem">${dropTxt(sCut)}</div></div>
+        <div class="stat"><div class="k">質押借款（同四貸）</div><div class="v">${plq} <small>萬</small></div></div>
+      </div>
+      <div class="verdict">
+        <b>怎麼看：</b>你拿 ${pv} 萬股票、質押借 ${plq} 萬，維持率 ${M0.toFixed(0)}%。這檔股票<b>再跌 ${g(s130)}%</b> 就摸到 130% 追繳線、限期補錢；<b>再跌 ${g(sCut)}%</b> 就觸斷頭、被強制賣掉。${stateNote}<br><br>
+        注意：若你質押的就是 <b>0050 正2（兩倍）</b>，它跌得比大盤快一倍——原型「台灣 50」大約只要跌 <b>${g(idx130)}%</b> 就追繳、跌 <b>${g(idxCut)}%</b> 就斷頭。各家契約門檻不同，實際以券商／銀行公告為準。
+      </div>`;
+    } else {
+      ph='<p class="hint" style="margin-top:14px">填入「股票帳面價值」，並在上方四貸同堂填「股票質押」金額，即可算出維持率與追繳／斷頭跌幅。</p>';
+    }
+
+    let verdict;
+    if(net<=-50){verdict='極度危險';}
+    else if(net<=-20){verdict='高風險';}
+    else if(net<=-8){verdict='偏高風險';}
+    else if(net<0){verdict='偏高風險（仍是虧損）';}
+    else{verdict='帳面為正（但槓桿風險仍在）';}
+
+    const thr = annR<8
+      ? `原型年化 <b>${annR.toFixed(1)}%</b>，低於關鍵的 <b>8%</b> 門檻——回測顯示此時正2 長期傾向「落後原型」，再疊你的槓桿與利息，這是<b>壞的偏移</b>。`
+      : `原型年化 <b>${annR.toFixed(1)}%</b>，高於 <b>8%</b> 門檻——若長期維持且漲多跌少，正2 的兩倍複利可能出現「<b>好的偏移</b>」放大獲利；但前提是你的槓桿部位要先撐過中間的下跌波動，否則先被斷頭。`;
+
+    $('out').innerHTML=`
+      <div class="big">
+        <div class="lbl">這段期間，你的本金（含利息）大約</div>
+        <div class="num">${fmt(net,1)}%</div>
+        <div class="note">正2 期間報酬 ${fmt(r*100,1)}% × ${L.toFixed(1)} 倍槓桿，再扣利息 ${fmt(-interestPct,1)}%</div>
+      </div>
+      <div class="grid">
+        <div class="stat"><div class="k">你的財務槓桿</div><div class="v">${L.toFixed(2)} <small>倍</small></div></div>
+        <div class="stat red"><div class="k">你以為的總槓桿</div><div class="v">${perceived.toFixed(1)} <small>倍 (×2)</small></div></div>
+        <div class="stat red"><div class="k">純波動耗損（正2部位）</div><div class="v">${fmt(dragPct,1)}<small>%</small></div></div>
+        <div class="stat"><div class="k">期間利息（分筆計）</div><div class="v">${interest.toFixed(1)} <small>萬 · 加權${blended.toFixed(1)}%</small></div></div>
+      </div>
+      <div class="breakdown"><b>利息分筆</b>${breakdown.length?breakdown.join('　｜　'):'未填借款'}</div>
+      <div class="verdict">
+        <b>原型決定一切：</b>${thr}<br><br>
+        <b>斷頭警戒線：</b>理論上部位下跌 <b>${posWipe.toFixed(0)}%</b> 本金就歸零（原型累積跌約 <b>${idxWipe.toFixed(0)}%</b>）。台股有 ±10% 漲跌停，這是「一段跌勢」而非單日；而且質押／融資維持率不足時，<b>追繳會更早來</b>，你不必等到歸零就先被斷頭出局。${pledgeLine}<br><br>
+        風險評級：<b>${verdict}</b>。標示是 2 倍，但波動耗損會隨波動率放大，你實際壓著的是 ${L.toFixed(1)} 倍財務槓桿 × 一個「原型沒漲過 8% 就會落後」的單日工具。
+      </div>`;
+    $('pledgeout').innerHTML=ph;
+  }
+  ids.forEach(id=>$(id).addEventListener('input',calc));
+  calc();
+
+  const FS=[{px:16,n:'標準'},{px:18,n:'大'},{px:20,n:'特大'},{px:22,n:'超大'}];
+  let fi=0;
+  function applyFS(){
+    document.documentElement.style.fontSize=FS[fi].px+'px';
+    $('flv').textContent=FS[fi].n;
+    $('fdec').disabled=(fi===0);
+    $('finc').disabled=(fi===FS.length-1);
+  }
+  $('finc').addEventListener('click',()=>{if(fi<FS.length-1){fi++;applyFS();}});
+  $('fdec').addEventListener('click',()=>{if(fi>0){fi--;applyFS();}});
+  applyFS();
+</script>
+</body>
+</html>
