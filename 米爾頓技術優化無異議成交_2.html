@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>米爾頓殿堂 × 無異議成交・技術優化整合</title>
+<style>
+  :root{
+    --navy:#123A63; --navy2:#0E2E4E; --teal:#009BA5; --teal-d:#017681;
+    --red:#C0392B; --red-d:#9c2b1f; --amber:#E08600; --purple:#6B4FA0;
+    --ink:#1F2A37; --muted:#5B6B7B; --line:#E1E7EE; --bg:#EEF2F6;
+    --card:#FFFFFF; --soft:#F4F8FA;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei","Heiti TC",sans-serif;
+    line-height:1.8; letter-spacing:.2px;}
+  .wrap{max-width:1000px; margin:0 auto; padding:0 20px 90px;}
+  a{color:var(--teal-d);}
+  /* Hero */
+  header.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 50%,#0a2138 100%);
+    color:#fff; padding:56px 20px 48px; text-align:center; position:relative; overflow:hidden;}
+  header.hero::after{content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 15% -20%,rgba(0,155,165,.4),transparent 42%),
+               radial-gradient(circle at 90% 120%,rgba(192,57,43,.28),transparent 45%);}
+  .hero .kw{position:relative; z-index:1;}
+  .hero .tag{display:inline-block; font-size:13px; letter-spacing:3px; color:#7FD3DA;
+    border:1px solid rgba(127,211,218,.5); border-radius:40px; padding:5px 16px; margin-bottom:18px;}
+  .hero h1{margin:0; font-size:33px; letter-spacing:1px; line-height:1.35;}
+  .hero h1 .x{color:#7FD3DA; font-weight:400; padding:0 6px;}
+  .hero .sub{margin-top:14px; font-size:16px; color:#C7D6E4; max-width:640px; margin-left:auto; margin-right:auto;}
+  .hero .brandbar{margin-top:20px; font-size:12px; color:#7FD3DA; letter-spacing:1px;}
+  /* thesis */
+  .thesis{background:var(--card); border-radius:14px; padding:28px 30px; margin-top:-30px;
+    position:relative; z-index:2; box-shadow:0 10px 30px rgba(18,58,99,.14);}
+  .thesis h2{margin:0 0 10px; font-size:20px; color:var(--navy);}
+  .thesis p{margin:10px 0; font-size:15.5px; color:#374556;}
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;}
+  .frame{border-radius:10px; padding:16px 18px; color:#fff;}
+  .frame.skel{background:linear-gradient(120deg,var(--navy),#1c527f);}
+  .frame.cata{background:linear-gradient(120deg,var(--teal-d),var(--teal));}
+  .frame h3{margin:0 0 6px; font-size:16px;}
+  .frame p{margin:4px 0; font-size:13.8px; color:#eaf3f6;}
+  /* nav */
+  .toc{display:flex; flex-wrap:wrap; gap:8px; margin:26px 0 6px; justify-content:center;}
+  .toc a{font-size:13px; text-decoration:none; background:#fff; border:1px solid var(--line);
+    color:#33505c; border-radius:30px; padding:6px 14px;}
+  .toc a:hover{border-color:var(--teal); color:var(--teal-d);}
+  /* section */
+  section.blk{margin-top:44px;}
+  .sec-head{display:flex; align-items:center; gap:14px; margin-bottom:6px;}
+  .sec-head .n{background:var(--navy); color:#fff; width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex:0 0 auto;}
+  .sec-head h2{margin:0; font-size:22px; color:var(--navy); letter-spacing:.5px;}
+  .sec-sub{color:var(--muted); font-size:14.5px; margin:2px 0 14px 48px;}
+  /* mapping table */
+  table.map{width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden;
+    box-shadow:0 3px 12px rgba(18,58,99,.07); font-size:14px;}
+  table.map th{background:var(--navy); color:#fff; text-align:left; padding:12px 14px; font-size:13.5px; letter-spacing:.5px;}
+  table.map td{padding:12px 14px; border-top:1px solid var(--line); vertical-align:top; color:#33414f;}
+  table.map tr:nth-child(even) td{background:var(--soft);}
+  table.map .stage{font-weight:700; color:var(--navy); white-space:nowrap;}
+  table.map .tech{color:var(--teal-d); font-weight:600;}
+  .belief-tag{display:inline-block; font-size:11px; background:#eaf4f5; color:var(--teal-d);
+    border-radius:5px; padding:1px 7px; margin-top:4px;}
+  /* stage card */
+  .stage-card{background:#fff; border-radius:12px; border:1px solid var(--line);
+    box-shadow:0 3px 10px rgba(18,58,99,.05); padding:0; margin-top:16px; overflow:hidden;}
+  .stage-card .bar{padding:12px 20px; color:#fff; display:flex; align-items:center; gap:12px;}
+  .stage-card .bar .stp{font-size:12px; letter-spacing:2px; opacity:.85;}
+  .stage-card .bar h3{margin:0; font-size:17px;}
+  .stage-card .bar .bt{margin-left:auto; font-size:12px; background:rgba(255,255,255,.18);
+    padding:3px 10px; border-radius:20px;}
+  .c-rap .bar{background:linear-gradient(120deg,#1c527f,var(--navy));}
+  .c-frame .bar{background:linear-gradient(120deg,#2a6f79,var(--teal-d));}
+  .c-pain .bar{background:linear-gradient(120deg,var(--red-d),var(--red));}
+  .c-doubt .bar{background:linear-gradient(120deg,#7a4b1f,var(--amber));}
+  .c-vision .bar{background:linear-gradient(120deg,#4a3a86,var(--purple));}
+  .c-money .bar{background:linear-gradient(120deg,#0c6b73,var(--teal));}
+  .c-close .bar{background:linear-gradient(120deg,var(--navy2),#123A63);}
+  .stage-card .body{padding:16px 22px 20px;}
+  .stage-card .tline{font-size:13px; color:var(--muted); margin:0 0 12px;}
+  .stage-card .tline b{color:var(--teal-d);}
+  .ba{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;}
+  .ba .box{border-radius:9px; padding:12px 14px; font-size:13.8px;}
+  .ba .before{background:#fbecea; border:1px solid #f2cdc8;}
+  .ba .after{background:#e7f5f6; border:1px solid #bfe6e9;}
+  .ba .lbl{font-size:11.5px; font-weight:700; letter-spacing:1px; display:block; margin-bottom:5px;}
+  .ba .before .lbl{color:var(--red-d);}
+  .ba .after .lbl{color:var(--teal-d);}
+  .ba .box .say{color:#33414f;}
+  .ba .box .say::before{content:"「"; } .ba .box .say::after{content:"」";}
+  .tips{margin:12px 0 0; padding-left:20px; font-size:14px; color:#33414f;}
+  .tips li{margin:5px 0;}
+  .tips b{color:var(--navy);}
+  /* objection reframe */
+  .obj{background:#fff; border-radius:12px; border:1px solid var(--line); padding:20px 24px; margin-top:16px;}
+  .obj h3{margin:0 0 4px; color:var(--red); font-size:17px;}
+  .obj .cmp{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;}
+  .obj .col{border-radius:10px; padding:14px 16px;}
+  .obj .trad{background:#fbecea; border:1px solid #f2cdc8;}
+  .obj .milt{background:#e7f5f6; border:1px solid #bfe6e9;}
+  .obj .col h4{margin:0 0 8px; font-size:14px;}
+  .obj .trad h4{color:var(--red-d);} .obj .milt h4{color:var(--teal-d);}
+  .obj .col ul{margin:0; padding-left:18px; font-size:13.8px; color:#33414f;}
+  .obj .arrow{text-align:center; font-size:12.5px; color:var(--muted); margin-top:10px;}
+  .obj .arrow b.r{color:var(--red-d);} .obj .arrow b.g{color:var(--teal-d);}
+  /* callout */
+  .callout{background:var(--soft); border-left:4px solid var(--teal); border-radius:8px;
+    padding:14px 18px; margin-top:14px; font-size:14.5px; color:#33505c;}
+  .callout b{color:var(--teal-d);}
+  .goldrule{background:linear-gradient(120deg,#0e3a5f,#0a2138); color:#eaf3f6; border-radius:12px;
+    padding:24px 28px; margin-top:16px;}
+  .goldrule h3{margin:0 0 8px; color:#7FD3DA; font-size:18px;}
+  .goldrule p{margin:6px 0; font-size:14.5px;}
+  .goldrule .q{color:#fff; font-weight:700; font-size:16px; border-left:3px solid var(--teal); padding-left:14px; margin-top:12px;}
+  .pill-line{margin-top:34px; text-align:center; color:var(--muted); font-size:13px;}
+  .btns{text-align:center; margin-top:26px;}
+  .btn{display:inline-block; background:var(--navy); color:#fff; border:none; border-radius:30px;
+    padding:11px 26px; font-size:14px; cursor:pointer; text-decoration:none; letter-spacing:1px;}
+  .btn:hover{background:var(--navy2);}
+  @media(max-width:680px){
+    .hero h1{font-size:25px;} .twocol,.ba,.obj .cmp{grid-template-columns:1fr;}
+    .sec-sub{margin-left:0;} table.map{font-size:12.5px;}
+    .stage-card .bar .bt{display:none;}
+  }
+  @media print{ body{background:#fff;} .btns,.toc{display:none;} .stage-card,.obj,table.map{box-shadow:none;} section.blk{page-break-inside:avoid;} }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="kw">
+    <div class="tag">徐老師教學整合</div>
+    <h1>米爾頓殿堂<span class="x">×</span>無異議成交</h1>
+    <div class="sub">把艾瑞克森的催眠技術，裝進無異議成交的每一個環節——讓「流程」長出「催化力」。</div>
+    <div class="brandbar">主講：徐承庚（徐老師）　·　IG @roger820510　·　LINE @nlplife</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="thesis">
+    <h2>為什麼要把兩套系統接起來？</h2>
+    <p>無異議成交給你的是<b>骨架</b>：一套從破冰到成交的流程，加上建立七種信念的提問地圖。它告訴你「該問什麼、按什麼順序問」。但流程本身是冷的——同樣一句提問，有人問了客戶敞開，有人問了客戶關門。</p>
+    <p>米爾頓（艾瑞克森）給你的是<b>催化劑</b>：呼應、深化、隱喻、名詞化、未來模擬、異議重組。它處理的是「同一句話，怎麼說進潛意識、怎麼降低防衛、怎麼讓客戶自己想通」。</p>
+    <div class="twocol">
+      <div class="frame skel"><h3>無異議成交 · 骨架</h3>
+        <p>流程順序、七大信念、提問清單、成交檢查表。解決「問什麼」。</p></div>
+      <div class="frame cata"><h3>米爾頓技術 · 催化</h3>
+        <p>呼應／深化／隱喻／混亂／未來模擬／重組。解決「怎麼說進去」。</p></div>
+    </div>
+    <div class="callout"><b>一句話：</b>無異議成交負責「把客戶帶到門口」，米爾頓技術負責「讓客戶自己走進去」。這份文件，就是把催化劑一滴一滴，滴進流程的每一格。</div>
+  </section>
+
+  <nav class="toc">
+    <a href="#map">全流程對照表</a>
+    <a href="#s1">① 建立連結</a>
+    <a href="#s2">② 框定對話</a>
+    <a href="#s3">③ 挖痛點</a>
+    <a href="#s4">④ 製造懷疑</a>
+    <a href="#s5">⑤ 代價與願景</a>
+    <a href="#s6">⑥ 金錢與異議</a>
+    <a href="#s7">⑦ 成交與植入</a>
+    <a href="#obj">異議重組專區</a>
+    <a href="#ethic">倫理底線</a>
+  </nav>
+
+  <!-- MAP TABLE -->
+  <section class="blk" id="map">
+    <div class="sec-head"><div class="n">■</div><h2>全流程對照表：一格一格對進去</h2></div>
+    <div class="sec-sub">左邊是無異議成交的環節與要建立的信念，右邊是對應的米爾頓催化技術。</div>
+    <table class="map">
+      <thead><tr>
+        <th style="width:20%">無異議成交環節</th>
+        <th style="width:22%">要建立的信念</th>
+        <th style="width:26%">套用的米爾頓技術</th>
+        <th style="width:32%">效果</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="stage">建立連結<br>Rapport</td><td>信任（前置）<span class="belief-tag">Trust</span></td>
+          <td class="tech">呼應建立關係<br>（VAK・3呼應+1引導）</td>
+          <td>用可證實的呼應與同感官詞彙，前 3 分鐘降低防衛，讓客戶身體先鬆下來。</td></tr>
+        <tr><td class="stage">框定對話<br>Frame</td><td>信任・支持<span class="belief-tag">Trust / Support</span></td>
+          <td class="tech">前提假設 · 雙重束縛</td>
+          <td>把「要不要談」偷換成「怎麼談」，用預設同意的語言取得主導權。</td></tr>
+        <tr><td class="stage">挖掘痛點<br>Pain</td><td>痛點<span class="belief-tag">Pain</span></td>
+          <td class="tech">深化語言 · 名詞化錯誤聚焦 · 感官超載</td>
+          <td>用明確 Vc/Ac/K 把地獄島畫清楚，讓客戶自己看見缺口的畫面與嚴重性。</td></tr>
+        <tr><td class="stage">製造懷疑<br>Doubt</td><td>懷疑<span class="belief-tag">Doubt</span></td>
+          <td class="tech">混亂技術（答非所問）· 過程類提問</td>
+          <td>打斷「我自己來就好」的自動化模式，讓他承認缺一套方法。</td></tr>
+        <tr><td class="stage">放大代價<br>Cost</td><td>成本<span class="belief-tag">Cost</span></td>
+          <td class="tech">未來模擬（負向）</td>
+          <td>讓他預演「什麼都不做，三年後的畫面」，把不作為的代價變得具體。</td></tr>
+        <tr><td class="stage">建立渴望<br>Desire</td><td>渴望<span class="belief-tag">Desire</span></td>
+          <td class="tech">未來模擬（正向）· Vc Ac K 建構天堂島</td>
+          <td>把目標從冷數字，變成有畫面、有感受、可被記住的天堂島。</td></tr>
+        <tr><td class="stage">金錢<br>Money</td><td>金錢<span class="belief-tag">Money</span></td>
+          <td class="tech">異議重組（重組・轉移・擴張）</td>
+          <td>面對「太貴／利率低」，不減少不消滅，用提問讓他自己重組價值。</td></tr>
+        <tr><td class="stage">支持<br>Support</td><td>支持<span class="belief-tag">Support</span></td>
+          <td class="tech">前提假設 · 三方會談框定</td>
+          <td>把決策者自然帶上桌，預先解除「回去討論」的臨門異議。</td></tr>
+        <tr><td class="stage">信任收尾<br>Trust</td><td>信任<span class="belief-tag">Trust</span></td>
+          <td class="tech">間接隱喻故事 · 案例暗示</td>
+          <td>用故事讓客戶自己對號入座，比直接說服更不會引發反彈。</td></tr>
+        <tr><td class="stage">成交植入<br>Close</td><td>—（臨門）</td>
+          <td class="tech">植入指令與暗示 · 後催眠</td>
+          <td>把「下一步該怎麼做」植入成他自己的想法，並延伸到未來的行動。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- STAGE 1 -->
+  <section class="blk" id="s1">
+    <div class="sec-head"><div class="n">1</div><h2>建立連結：用呼應取代寒暄</h2></div>
+    <div class="sec-sub">無異議成交的 Rapport ＋ 米爾頓的「呼應建立關係」</div>
+    <div class="stage-card c-rap">
+      <div class="bar"><span class="stp">STEP 01</span><h3>建立連結 Rapport</h3><span class="bt">信念：信任（前置）</span></div>
+      <div class="body">
+        <p class="tline">原流程：閒聊破冰、請客戶拿紙筆。<b>催化升級：</b>把破冰換成「可證實的 VAK 呼應 + 引導」，讓親合在潛意識層發生。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">生硬版（唸得出標記＝像怪人）</span><span class="say">你剛坐下來（呼應）、把手機放到桌上（呼應）、看著這份資料（呼應）……你會慢慢覺得比較輕鬆（引導）。</span></div>
+          <div class="box after"><span class="lbl">自然版（把標記融進一句話）</span><span class="say">我們今天就約在這間咖啡廳、我也把你想了解的建議書帶來了，就這樣坐下來……好好聊聊，怎麼讓你的現在跟未來，都變得更好。</span></div>
+        </div>
+        <div class="callout"><b>關鍵原則——標記是練習用的，實戰要融掉：</b>「（呼應）（呼應）（呼應）」那種寫法，是<u>拆解時</u>拿來檢查「我這句到底有沒有呼應」用的；真的跟客戶講話時，要把三個呼應<b>藏進一句自然的話裡</b>（約在咖啡廳、帶了建議書、坐下來都是可證實的共同事實），客戶完全不會發現你在用技術。<b>唸得出標記，就輸了。</b></div>
+        <ul class="tips">
+          <li><b>要點：</b>呼應必須「當下可被證實」，不是評價（Ad）；用客戶的同一個感官系統詞彙接球。</li>
+          <li><b>自然度：</b>一句話裡塞 2～3 個呼應就夠，用「、」串起來，尾巴自然接一個往未來/放鬆的引導——不要每個呼應都停頓、更不要把「呼應」兩個字唸出來。</li>
+          <li><b>對應信念：</b>先信任，後專業——客戶不是先聽懂你的專業才信任你，而是先信任你，才願意聽懂。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="blk" id="s2">
+    <div class="sec-head"><div class="n">2</div><h2>框定對話：用前提假設拿回主導權</h2></div>
+    <div class="sec-sub">無異議成交的 Frame ＋ 米爾頓的「前提假設・雙重束縛」</div>
+    <div class="stage-card c-frame">
+      <div class="bar"><span class="stp">STEP 02</span><h3>框定對話 Frame</h3><span class="bt">信念：信任・支持</span></div>
+      <div class="body">
+        <p class="tline">原流程：說明「這通電話怎麼進行」。<b>催化升級：</b>用「預設同意」的語言，把選擇題偷換成怎麼做，而不是要不要做。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">原本（給對方拒絕的空間）</span><span class="say">你要不要先聽我介紹一下我們的服務？如果你有興趣的話。</span></div>
+          <div class="box after"><span class="lbl">催化後（雙重束縛・前提假設）</span><span class="say">我們等一下會先把你的保障現況看清楚，再看方向——你比較希望我從家庭責任先看，還是從醫療先看？</span></div>
+        </div>
+        <ul class="tips">
+          <li><b>雙重束縛：</b>兩個選項都通往你要的方向（先看 A / 先看 B，反正都要看）。</li>
+          <li><b>紅線：</b>前提假設是用來「框定流程」，不是用來預設客戶已買單。守住需求導向。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="blk" id="s3">
+    <div class="sec-head"><div class="n">3</div><h2>挖痛點：用深化與名詞化把地獄島畫清楚</h2></div>
+    <div class="sec-sub">無異議成交的 Pain ＋ 米爾頓的「深化・名詞化錯誤聚焦・感官超載」</div>
+    <div class="stage-card c-pain">
+      <div class="bar"><span class="stp">STEP 03</span><h3>挖掘痛點 Pain</h3><span class="bt">信念：痛點</span></div>
+      <div class="body">
+        <p class="tline">原流程：隔離痛點、深入挖掘。<b>催化升級：</b>用深化語言（明確 Vc/Ac/K、不比較、不用複雜名詞）＋抓住客戶脫口而出的名詞化，做錯誤聚焦，把痛放大成畫面。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">原本（抽象、講道理）</span><span class="say">你這樣保障不夠喔，萬一有風險家庭會有問題。</span></div>
+          <div class="box after"><span class="lbl">催化後（深化 + 名詞化聚焦）</span><span class="say">你剛說怕變成家人的「負擔」……當你說負擔（重複他的名詞化），你腦中先浮現的是誰的臉？如果那一天真的來了，他明年的生活會是什麼畫面？</span></div>
+        </div>
+        <ul class="tips">
+          <li><b>名詞化錯誤聚焦：</b>對「負擔／壓力／遺憾」這種詞做多重解釋 → 找出對他最強烈的那個 → 結合未來模擬。</li>
+          <li><b>感官超載（謹慎用）：</b>只在客戶「太冷靜、太自信」時，用連續同感官細節讓他從理性抽離，回到感受。</li>
+          <li><b>底線：</b>放大的是「他本來就在意的畫面」，不是製造恐懼。引導，不恐嚇。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="blk" id="s4">
+    <div class="sec-head"><div class="n">4</div><h2>製造懷疑：用混亂打斷「我自己來就好」</h2></div>
+    <div class="sec-sub">無異議成交的 Doubt ＋ 米爾頓的「答非所問・過程類提問」</div>
+    <div class="stage-card c-doubt">
+      <div class="bar"><span class="stp">STEP 04</span><h3>製造懷疑 Doubt</h3><span class="bt">信念：懷疑</span></div>
+      <div class="body">
+        <p class="tline">原流程：讓客戶承認「靠自己解決不了」。<b>催化升級：</b>當客戶處在「我自己上網買就好／我自己會理財」的自動化模式，用一句答非所問或過程提問打斷它。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">原本（正面對撞，引發抗拒）</span><span class="say">你自己買不對啦，還是要找專業的幫你規劃比較好。</span></div>
+          <div class="box after"><span class="lbl">催化後（過程提問，讓他自己說沒有）</span><span class="say">我很好奇——你現在手上，有一套只要照著走、就能確定「萬一出事家人不受影響」的流程嗎？還是這正是你今天想釐清的？</span></div>
+        </div>
+        <ul class="tips">
+          <li><b>設計目標：</b>這些問題是設計來讓客戶回答「沒有」的，讓他自己意識到缺一套方法。</li>
+          <li><b>注意：</b>要懷疑的是他「解決問題的能力」，不是他的目標；已經有懷疑的客戶，別再加懷疑。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="blk" id="s5">
+    <div class="sec-head"><div class="n">5</div><h2>代價與願景：用未來模擬兩頭夾</h2></div>
+    <div class="sec-sub">無異議成交的 Cost / Desire ＋ 米爾頓的「未來模擬（負向 + 正向）」</div>
+    <div class="stage-card c-vision">
+      <div class="bar"><span class="stp">STEP 05</span><h3>放大代價 + 建立渴望</h3><span class="bt">信念：成本・渴望</span></div>
+      <div class="body">
+        <p class="tline">原流程：為什麼是現在（代價）＋願景動機。<b>催化升級：</b>同一個技術「未來模擬」用兩次——先預演「不做的未來（地獄島）」，再預演「做了的未來（天堂島）」，落差自己就出來了。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">未來模擬・負向（代價）</span><span class="say">閉上眼想一下，如果接下來三年什麼都沒改，還是現在這樣……那一天真的來的時候，孩子會聽到什麼、看到什麼？</span></div>
+          <div class="box after"><span class="lbl">未來模擬・正向（渴望）</span><span class="say">現在換個畫面——如果這塊保障今天補起來了，往後每個月你看著帳單時，心裡會是什麼感覺？那份踏實，值多少？</span></div>
+        </div>
+        <ul class="tips">
+          <li><b>要有具體數字：</b>渴望一定要落到一個可衡量的目標（保額、退休月現金流），否則不夠力。</li>
+          <li><b>Vc Ac K：</b>讓他「看到、聽到、感受到」，故事感比數字更能被記住。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 6 -->
+  <section class="blk" id="s6">
+    <div class="sec-head"><div class="n">6</div><h2>金錢與異議：把減少消滅，換成重組擴張</h2></div>
+    <div class="sec-sub">無異議成交的 Money / 異議處理 ＋ 米爾頓的「重組・轉移・擴張」</div>
+    <div class="stage-card c-money">
+      <div class="bar"><span class="stp">STEP 06</span><h3>金錢與異議 Money</h3><span class="bt">信念：金錢</span></div>
+      <div class="body">
+        <p class="tline">原流程：報保費、處理抗拒。<b>催化升級：</b>這是整套整合的核心——面對異議，傳統想「減少、降低、消滅」（往客戶身上推話術，刺激抗拒）；米爾頓是「重組、轉移、擴張」（用提問讓客戶自己重組價值）。詳見下方異議重組專區。</p>
+        <div class="callout"><b>關鍵心法：</b>當你在「處理」異議，你就站在客戶的對立面；當你在「提問」，客戶會站到你這邊，自己說服自己。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 7 -->
+  <section class="blk" id="s7">
+    <div class="sec-head"><div class="n">7</div><h2>成交與植入：讓「下一步」變成他自己的想法</h2></div>
+    <div class="sec-sub">無異議成交的 Close ＋ 米爾頓的「植入指令與暗示・後催眠」</div>
+    <div class="stage-card c-close">
+      <div class="bar"><span class="stp">STEP 07</span><h3>成交植入 Close</h3><span class="bt">臨門一腳</span></div>
+      <div class="body">
+        <p class="tline">原流程：承諾階段、報價後停頓。<b>催化升級：</b>用間接暗示與後催眠，把行動植入成客戶自己的決定，並延伸到未來。</p>
+        <div class="ba">
+          <div class="box before"><span class="lbl">原本（要求成交）</span><span class="say">那我們就這樣定了好嗎？你今天要不要簽？</span></div>
+          <div class="box after"><span class="lbl">催化後（植入 + 後催眠）</span><span class="say">當你之後每個月看到扣款的通知，你會想起今天你為家人做的這個決定……你不用現在決定全部，只要先決定：我們是從家庭責任這塊先開始，對嗎？</span></div>
+        </div>
+        <ul class="tips">
+          <li><b>後催眠暗示：</b>把「未來某個情境」和「正向感受」綁在一起，讓決定在成交後持續被強化，降低反悔。</li>
+          <li><b>小步承諾：</b>不逼一次到位，先取得一個小的、他自己說出口的「對」。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- OBJECTION REFRAME -->
+  <section class="blk" id="obj">
+    <div class="sec-head"><div class="n">◎</div><h2>異議重組專區：紅圈 vs 綠圈</h2></div>
+    <div class="sec-sub">這是課堂上「這商品利率太低了」那一頁的完整拆解——套到任何異議都通用。</div>
+
+    <div class="obj">
+      <h3>異議範例：「這商品利率太低了」</h3>
+      <div class="cmp">
+        <div class="col trad"><h4>紅圈・傳統：減少 / 降低 / 消滅（箭頭向內）</h4>
+          <ul>
+            <li>「它有強迫儲蓄的功能」</li>
+            <li>「它有鎖利」</li>
+            <li>「我們家利率最高」</li>
+            <li>「還免補充保費」</li>
+            <li>「快要停售了，給我一個機會」</li>
+          </ul>
+        </div>
+        <div class="col milt"><h4>綠圈・米爾頓：重組 / 轉移 / 擴張（箭頭向外）</h4>
+          <ul>
+            <li>「利率太低——你是<b>跟什麼比</b>？」</li>
+            <li>「你會<b>怎麼說</b>它低？」</li>
+            <li>「這筆錢你<b>何時要用</b>？」</li>
+            <li>「它的<b>用途是</b>什麼？」</li>
+            <li>「這份規劃<b>為了誰</b>？<b>如何讓自己更好</b>？」</li>
+          </ul>
+        </div>
+      </div>
+      <div class="arrow">箭頭向內＝把話術推向客戶＝<b class="r">製造防衛與抗拒</b>　│　箭頭向外＝用問題引導客戶自己走出來＝<b class="g">他自己重組、合理化成交</b></div>
+    </div>
+
+    <div class="callout"><b>為什麼有效（一致性原則）：</b>當價值是客戶「自己講出來的」，他會為了跟自己言行一致而傾向成交——這比你講一百句都有用。你問得越好，他說服自己越深。</div>
+  </section>
+
+  <!-- ETHICS -->
+  <section class="blk" id="ethic">
+    <div class="sec-head"><div class="n">✦</div><h2>倫理底線：引導 ≠ 操控</h2></div>
+    <div class="goldrule">
+      <h3>把力量用在對的方向</h3>
+      <p>這套整合很有威力——正因為有威力，更要守住底線。這些技術是用來<b>降低防衛、讓客戶感覺被理解、幫他面對本來就該面對的問題</b>，不是用來讓他買不需要的東西。</p>
+      <p>我們賣的是保險與投資型商品，受金管會監理、攸關家庭一輩子的財務。所以：需求導向、充分揭露、不誇大報酬、不製造不實急迫感；投資型保單一律以長期配置、保障、家庭責任為框架，不包裝投機與貪婪。</p>
+      <div class="q">真正的催眠式銷售，不是操控客戶，而是引導客戶說出他本來就需要面對的問題。</div>
+      <p style="margin-top:14px; color:#7FD3DA; font-weight:700;">學得會，用得出來，業績改變看得見。</p>
+    </div>
+  </section>
+
+  <div class="btns"><button class="btn" onclick="window.print()">列印 / 存成 PDF</button></div>
+  <div class="pill-line">米爾頓殿堂 × 無異議成交・技術優化整合　│　徐承庚　·　IG @roger820510　·　LINE @nlplife</div>
+</div>
+</body>
+</html>

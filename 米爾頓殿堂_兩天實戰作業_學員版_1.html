@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>米爾頓殿堂・兩天實戰作業（學員版）</title>
+<style>
+  :root{
+    --navy:#123A63; --navy2:#0E2E4E; --teal:#009BA5; --teal-d:#017681;
+    --red:#C0392B; --amber:#E08600; --ink:#1F2A37; --muted:#5B6B7B;
+    --line:#E1E7EE; --bg:#EEF2F6; --card:#FFFFFF; --soft:#F4F8FA;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei","Heiti TC",sans-serif;
+    line-height:1.8; letter-spacing:.2px;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 80px;}
+  /* Hero */
+  header.hero{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 55%,#0a2138 100%);
+    color:#fff; padding:52px 20px 46px; text-align:center; position:relative; overflow:hidden;
+  }
+  header.hero::after{content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 80% -10%,rgba(0,155,165,.35),transparent 45%);}
+  .hero .kw{position:relative; z-index:1;}
+  .hero .tag{display:inline-block; font-size:14px; letter-spacing:3px; color:#7FD3DA;
+    border:1px solid rgba(127,211,218,.5); border-radius:40px; padding:5px 16px; margin-bottom:18px;}
+  .hero h1{margin:0; font-size:34px; letter-spacing:2px;}
+  .hero .sub{margin-top:12px; font-size:16px; color:#C7D6E4;}
+  .hero .meta{margin-top:22px; font-size:13px; color:#9FB3C6;}
+  .hero .brandbar{margin-top:20px; font-size:12px; color:#7FD3DA; letter-spacing:1px;}
+  /* Intro card */
+  .intro{background:var(--card); border-radius:14px; padding:26px 28px; margin-top:-30px;
+    position:relative; z-index:2; box-shadow:0 10px 30px rgba(18,58,99,.14);}
+  .intro h2{margin:0 0 10px; font-size:19px; color:var(--navy);}
+  .intro p{margin:8px 0; color:#374556; font-size:15.5px;}
+  .howto{background:var(--soft); border-left:4px solid var(--teal); border-radius:8px;
+    padding:14px 18px; margin-top:16px; font-size:14.5px; color:#33505c;}
+  .howto b{color:var(--teal-d);}
+  /* Day header */
+  .day{margin-top:44px;}
+  .day-head{display:flex; align-items:center; gap:16px; padding:18px 22px; border-radius:12px;
+    color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.12);}
+  .day1 .day-head{background:linear-gradient(120deg,var(--teal-d),var(--teal));}
+  .day2 .day-head{background:linear-gradient(120deg,#9c2b1f,var(--red));}
+  .day-num{font-size:13px; letter-spacing:2px; opacity:.85;}
+  .day-head h2{margin:2px 0 0; font-size:23px; letter-spacing:1px;}
+  .day-head .focus{margin-left:auto; text-align:right; font-size:12.5px; opacity:.9; max-width:230px;}
+  .coverage{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 6px;}
+  .chip{font-size:12.5px; background:#fff; border:1px solid var(--line); color:#3a4b5c;
+    border-radius:30px; padding:4px 13px;}
+  .day1 .chip{border-color:#bde7ea;}
+  .day2 .chip{border-color:#f0cdc8;}
+  /* Question card */
+  .q{background:var(--card); border-radius:12px; padding:22px 24px; margin-top:18px;
+    border:1px solid var(--line); box-shadow:0 3px 10px rgba(18,58,99,.05);}
+  .q-top{display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;}
+  .badge{font-size:11.5px; font-weight:700; color:#fff; border-radius:6px; padding:3px 10px; letter-spacing:.5px;}
+  .b-obs{background:#5B6B7B;}   /* 觀念辨識 */
+  .b-case{background:var(--teal-d);} /* 情境案例 */
+  .b-design{background:var(--amber);} /* 設計題 */
+  .b-role{background:var(--red);}   /* 角色扮演 */
+  .b-action{background:var(--navy);} /* 行動作業 */
+  .b-group{background:#6B4FA0;}     /* 小組討論 */
+  .q-no{font-weight:700; color:var(--navy); font-size:15px;}
+  .q-title{font-weight:700; font-size:17px; margin:2px 0 8px; color:var(--ink);}
+  .q p{margin:8px 0; font-size:15px; color:#33414f;}
+  .q ul,.q ol{margin:8px 0 8px 4px; padding-left:22px; font-size:15px; color:#33414f;}
+  .q li{margin:4px 0;}
+  .stimulus{background:var(--soft); border-radius:8px; padding:12px 16px; font-size:14.5px; color:#31434f;}
+  .stimulus .lbl{font-size:12px; color:var(--teal-d); font-weight:700; letter-spacing:1px;}
+  .quote{border-left:3px solid var(--teal); padding:4px 0 4px 14px; color:#2c3e50; font-style:normal;}
+  /* answer / work area */
+  .work{margin-top:14px;}
+  .work .wlbl{font-size:12px; font-weight:700; color:var(--muted); letter-spacing:1px; margin-bottom:6px;}
+  .lines{border:1.5px solid #c4cfd9; border-radius:8px; min-height:88px; background:#fff;
+    padding:10px 13px; cursor:text; font-size:14.5px; line-height:1.75; color:var(--ink);
+    transition:border-color .15s, box-shadow .15s; white-space:pre-wrap; word-break:break-word;}
+  .lines.sm{min-height:56px;}
+  .lines.lg{min-height:124px;}
+  .lines:hover{border-color:#9db2c4;}
+  .lines:focus{outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(0,155,165,.18);}
+  .lines:empty:before{content:attr(data-ph); color:#a7b4c0; pointer-events:none;}
+  .lines:focus:empty:before{content:"";}
+  /* card table for role play */
+  .cards2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
+  .mini{border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:#fff;}
+  .mini h4{margin:0 0 8px; font-size:14px; color:var(--navy); border-bottom:1px solid var(--line); padding-bottom:6px;}
+  .mini.k h4{color:var(--red);}
+  .mini ul{margin:0; padding-left:18px; font-size:13.5px;}
+  /* self check */
+  .check{background:var(--soft); border-radius:8px; padding:12px 16px; margin-top:14px;}
+  .check .lbl{font-size:12px; color:var(--teal-d); font-weight:700; letter-spacing:1px;}
+  .check label{display:flex; gap:9px; align-items:flex-start; font-size:14px; color:#31434f; margin:6px 0; cursor:pointer;}
+  .check input{margin-top:5px; accent-color:var(--teal);}
+  /* ethics footer */
+  .ethics{margin-top:40px; background:#fff; border:1px solid var(--line); border-top:4px solid var(--teal);
+    border-radius:12px; padding:22px 26px;}
+  .ethics h3{margin:0 0 8px; color:var(--navy); font-size:17px;}
+  .ethics p{font-size:14px; color:#3a4b5c; margin:6px 0;}
+  .pill-line{margin-top:26px; text-align:center; color:var(--muted); font-size:13px;}
+  .btns{text-align:center; margin-top:26px;}
+  .btn{display:inline-block; background:var(--navy); color:#fff; border:none; border-radius:30px;
+    padding:11px 26px; font-size:14px; cursor:pointer; text-decoration:none; letter-spacing:1px;}
+  .btn:hover{background:var(--navy2);}
+  @media(max-width:640px){
+    .hero h1{font-size:26px;} .cards2{grid-template-columns:1fr;}
+    .day-head .focus{display:none;}
+  }
+  @media print{
+    body{background:#fff;} .btns{display:none;} .q,.intro,.ethics{box-shadow:none;}
+    header.hero{padding:30px 10px;} .day{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="kw">
+    <div class="tag">NLP 高階執行師證照班</div>
+    <h1>米爾頓殿堂・兩天實戰作業</h1>
+    <div class="sub">學員版　│　學得會，用得出來，業績改變看得見</div>
+    <div class="meta">主講：徐承庚（徐老師）　·　艾瑞克森催眠 × 無異議成交落地</div>
+    <div class="brandbar">IG @roger820510　·　LINE @nlplife</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="intro">
+    <h2>寫在前面：這份作業怎麼用</h2>
+    <p>這兩天的作業不是「考你背了多少」，而是逼你把米爾頓的技術，真的用一次在<b>保險銷售的場景</b>裡。理論你聽得懂不算數，能在客戶面前做得出來才算數。</p>
+    <div class="howto">
+      <b>使用方式：</b>Day 1 上完當晚完成 Day 1 作業，Day 2 上完當晚完成 Day 2 作業。角色扮演題請找一位夥伴兩人一組、互換角色各跑一次；行動作業請在下次上課前完成，課堂會抽點分享。每題最後的「自我檢核」是給你自己打分用的，不是標準答案——<b>做不出來的地方，就是你下一步要練的地方。</b><br><br>
+      <b style="color:var(--teal-d);">✍ 作答方式：</b>下面每一個框都可以<b>直接點進去打字</b>，勾選框也能點。填寫完請按頁尾的「列印／存成 PDF」保存你的答案（重新整理頁面不會自動保留內容，記得先存檔）。
+    </div>
+  </section>
+
+  <!-- ================= DAY 1 ================= -->
+  <div class="day day1">
+    <div class="day-head">
+      <div>
+        <div class="day-num">DAY 1</div>
+        <h2>催眠的地基：後設理念 × 導入深化</h2>
+      </div>
+      <div class="focus">主題｜艾瑞克森後設理念、催眠五步驟（導入・深化）、呼應建立關係、VAK</div>
+    </div>
+    <div class="coverage">
+      <span class="chip"># 8 條後設理念</span>
+      <span class="chip"># 導入 2 分鐘</span>
+      <span class="chip"># 深化 3 分鐘</span>
+      <span class="chip"># 3 呼應 + 1 引導</span>
+      <span class="chip"># VAK・可證實</span>
+      <span class="chip"># 天堂島 vs 地獄島</span>
+    </div>
+
+    <!-- Q1 觀念辨識 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-obs">觀念辨識</span><span class="q-no">Day1 · 第 1 題</span></div>
+      <div class="q-title">後設理念，哪裡想錯了？</div>
+      <p>下列每一句都是學員常見的「以為自己懂了」的說法。請判斷它<b>符合／違反</b>艾瑞克森學派的後設理念，並用一句話寫出理由。</p>
+      <ol>
+        <li>「催眠就是要照著一套固定流程念稿，客戶才會進入狀態。」</li>
+        <li>「客戶身上的資源不夠，所以我要『給』他信心和動力。」</li>
+        <li>「客戶會排斥，代表他是錯的，我要把他的錯誤觀念矯正過來。」</li>
+        <li>「非語言、肢體、甚至一張紙條，都可以是催眠導入的一部分。」</li>
+        <li>「最好的催眠，是在自然的對話裡發生，讓表層意識來不及設防。」</li>
+      </ol>
+      <div class="work"><div class="wlbl">你的判斷與理由</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我能分辨「制式流程」與「因人而異」在艾瑞克森學派的差別</label>
+        <label><input type="checkbox">我理解催眠是「激發、轉移、重組」客戶既有資源，不是我創造資源給他</label>
+        <label><input type="checkbox">我能說出「過程矯正」與「錯誤矯正」的不同</label>
+      </div>
+    </div>
+
+    <!-- Q2 情境案例 VAK -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-case">情境案例</span><span class="q-no">Day1 · 第 2 題</span></div>
+      <div class="q-title">聽出他的 VAK，設計你的呼應句</div>
+      <div class="stimulus"><span class="lbl">客戶開場白</span><br>
+        王先生（42 歲，工程師）跟你說：「我最近<b>看</b>了不少報導，總覺得<b>畫面</b>裡那些家庭破碎的新聞離我不遠，我想把保障<b>看清楚</b>一點，心裡才踏實。」</div>
+      <p>請完成三件事：</p>
+      <ol>
+        <li>判斷王先生偏哪一個感官系統（V／A／K），並圈出你的判斷依據。</li>
+        <li>寫出 <b>3 句「可證實的呼應」</b>（VAK，不要有 Ad 判斷詞）。</li>
+        <li>在第 3 句之後接上 <b>1 句引導</b>（用「也 / 你會 / 慢慢地」等連接詞把呼應帶向放鬆或信任）。</li>
+      </ol>
+      <div class="work"><div class="wlbl">3 呼應 + 1 引導</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我的呼應是「當下可被證實」的事實，不是我的猜測或評價</label>
+        <label><input type="checkbox">我用了跟客戶同一個感官系統的詞彙（他用「看」，我也用視覺詞）</label>
+        <label><input type="checkbox">引導句自然接在呼應後面，客戶不會覺得突兀</label>
+      </div>
+    </div>
+
+    <!-- Q3 設計題 導入 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-design">設計題</span><span class="q-no">Day1 · 第 3 題</span></div>
+      <div class="q-title">寫一段 2 分鐘的「漸進式放鬆」導入</div>
+      <p>情境：你要在一場一對一保障檢視的開場，用<b>對話（非閉眼催眠）</b>的方式，讓客戶從緊繃、防衛，慢慢進入放鬆、願意多講的狀態。請寫出一段可以照著念的導入腳本，要求：</p>
+      <ul>
+        <li>至少 4 組「呼應 + 連接詞 + 引導」的句子（可套：聽著我的聲音＋你會＋慢慢地放鬆）。</li>
+        <li>全程<b>不出現</b>比較級、複雜名詞、專業術語（會引發 Ad、把客戶拉回表層意識）。</li>
+        <li>結尾收在「願意打開、願意聊」的方向，不是睡著。</li>
+      </ul>
+      <p style="background:#F4F8FA;border-left:4px solid var(--teal);border-radius:8px;padding:12px 16px;font-size:14px;color:#33505c;"><b style="color:var(--teal-d);">別寫成機器人：</b>練習時你可以標「(呼應)(呼應)」來檢查，但<b>真的要唸出來的版本，要把呼應融進一句自然的話裡</b>，不要每個都停頓、更不要把「呼應」唸出來。例：「我們今天就約在這間咖啡廳、我也把你想了解的資料帶來了，就這樣坐下來……好好聊聊怎麼讓你的現在跟未來變更好。」——客戶完全不會發現你在用技術。<b>唸得出標記，就輸了。</b></p>
+      <div class="work"><div class="wlbl">你的導入腳本（自然版，不要標記）</div><div class="lines lg"></div><div class="lines"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">整段沒有讓客戶需要「思考、判斷」的詞</label>
+        <label><input type="checkbox">節奏是慢的、重複的、層層往下的</label>
+        <label><input type="checkbox">念出來給自己聽，我自己也會鬆一點</label>
+      </div>
+    </div>
+
+    <!-- Q4 情境案例 深化-放大差距 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-case">情境案例</span><span class="q-no">Day1 · 第 4 題</span></div>
+      <div class="q-title">深化：把「地獄島」畫清楚</div>
+      <div class="stimulus"><span class="lbl">客戶現況</span><br>
+        陳小姐，38 歲，單親，一個 6 歲小孩，房貸還剩 800 萬，目前只有勞保和一張很小的醫療險。她說：「應該還好啦，我身體很健康。」</div>
+      <p>請用<b>深化的語言（明確的 Vc／Ac／K、不比較、不用複雜名詞）</b>，設計 3～4 個問題，帶她一步步「往下沉」，看見「萬一自己倒下」對孩子與房貸的真實畫面。<b>不要說教、不要恐嚇</b>，用問句讓她自己看見。</p>
+      <div class="work"><div class="wlbl">你的深化提問（層層往下）</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我是用「問句」帶她看見，不是我直接下結論</label>
+        <label><input type="checkbox">問題裡有具體畫面（孩子、房子、每月帳單），不是抽象的「風險」</label>
+        <label><input type="checkbox">我沒有製造恐懼，而是讓她自己連結到在意的人</label>
+      </div>
+    </div>
+
+    <!-- Q5 角色扮演 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-role">角色扮演（兩人一組）</span><span class="q-no">Day1 · 第 5 題</span></div>
+      <div class="q-title">實戰：用呼應與導入，讓客戶卸下防衛</div>
+      <p>兩人一組，一人當客戶、一人當業務，跑 <b>12 分鐘</b>後互換。業務方本回合<b>只練「建立連結 + 導入 + 深化」</b>，<u>不准講商品、不准報價</u>。</p>
+      <div class="cards2">
+        <div class="mini k"><h4>客戶角色卡：林太太</h4>
+          <ul>
+            <li>45 歲，家管，三個小孩</li>
+            <li>VAK：偏 K（觸覺）— 語速慢、愛用「感覺、踏實、穩」</li>
+            <li>初始態度：防衛，「保險我朋友都有在做，先不用」</li>
+            <li>身體訊號：一開始手抱胸、身體後仰</li>
+          </ul>
+        </div>
+        <div class="mini"><h4>業務任務卡</h4>
+          <ul>
+            <li>目標：前 3 分鐘用呼應讓她「放下手、身體前傾」</li>
+            <li>用她的 K 詞彙接球（穩、踏實），不要用「報酬率」</li>
+            <li>完成一段導入 + 至少 2 個深化提問</li>
+            <li>不能做：推商品、報價、反駁她朋友</li>
+          </ul>
+        </div>
+      </div>
+      <div class="work"><div class="wlbl">觀察員／自己記下：哪一句話讓她鬆下來？哪一句讓她又防衛起來？</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核（ROSB・親合階段）</span>
+        <label><input type="checkbox">R 親合：前 3 分鐘她的身體有放鬆嗎？我有呼應她的語速與 K 詞彙嗎？</label>
+        <label><input type="checkbox">我有在她防衛時「呼應情緒」，而不是急著解釋嗎？</label>
+        <label><input type="checkbox">整段我說的話 vs 她說的話，她講得比我多嗎？</label>
+      </div>
+    </div>
+
+    <!-- Q6 行動作業 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-action">行動作業（下次上課前）</span><span class="q-no">Day1 · 第 6 題</span></div>
+      <div class="q-title">錄一段你的「呼應 30 秒」</div>
+      <p>在真實生活裡找一個對象（家人、同事、朋友都可以，<b>不需談保險</b>），用手機錄一段 30～60 秒的對話，練習<b>「3 呼應 + 1 引導」</b>。事後聽自己的錄音，寫下：</p>
+      <ul>
+        <li>我哪一句是「可證實的呼應」、哪一句其實是「我的評價（Ad）」？</li>
+        <li>對方在我引導後，語氣或狀態有沒有變化？</li>
+      </ul>
+      <div class="work"><div class="wlbl">聽完錄音後的三行心得</div><div class="lines"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我真的錄了、也真的重聽了（完成率比品質重要）</label>
+        <label><input type="checkbox">我能指出自己至少一句「假呼應（其實是評價）」</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DAY 2 ================= -->
+  <div class="day day2">
+    <div class="day-head">
+      <div>
+        <div class="day-num">DAY 2</div>
+        <h2>催眠的應用：混亂技術 × 異議重組 × 無異議落地</h2>
+      </div>
+      <div class="focus">主題｜應用・後催眠・導出、混亂技術、傳統 vs 米爾頓異議重組、莫比烏斯環</div>
+    </div>
+    <div class="coverage">
+      <span class="chip"># 植入指令與暗示</span>
+      <span class="chip"># 隱喻故事</span>
+      <span class="chip"># 答非所問</span>
+      <span class="chip"># 感官超載</span>
+      <span class="chip"># 名詞化錯誤聚焦</span>
+      <span class="chip"># 重組・轉移・擴張</span>
+      <span class="chip"># 未來模擬</span>
+    </div>
+
+    <!-- Q1 觀念辨識 混亂 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-obs">觀念辨識</span><span class="q-no">Day2 · 第 1 題</span></div>
+      <div class="q-title">混亂技術，用對還是用錯？</div>
+      <p>依「混亂基本假設」判斷下列做法<b>合理／不合理</b>，並寫理由：</p>
+      <ol>
+        <li>客戶已經很焦慮、很不確定了，我再加一段感官超載把他弄得更亂。</li>
+        <li>客戶處在「我自己上網買就好」的自動化模式，我用一句答非所問打斷它。</li>
+        <li>混亂的目的是讓客戶當機，這樣我就能趁機把商品塞給他。</li>
+        <li>當不確定升高，人會本能地想抓一個「能降低不確定」的方法。</li>
+      </ol>
+      <div class="work"><div class="wlbl">你的判斷與理由</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我知道「已經很亂的客戶」不該再加混亂（要給確定）</label>
+        <label><input type="checkbox">我理解混亂是為了「打斷自動化模式」，不是為了操控</label>
+      </div>
+    </div>
+
+    <!-- Q2 設計題 名詞化錯誤聚焦 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-design">設計題・術科</span><span class="q-no">Day2 · 第 2 題</span></div>
+      <div class="q-title">名詞化的錯誤聚焦：把痛點放大</div>
+      <p>客戶隨口說了一個名詞化的詞：<span class="quote">「我就是怕以後會有<b>負擔</b>。」</span></p>
+      <p>請依「名詞化錯誤聚焦」流程操作：</p>
+      <ol>
+        <li>對「負擔」做出 <b>3 種以上可能的解釋</b>（例：負擔＝拖累孩子／負擔＝老了沒尊嚴／負擔＝要跟人開口借錢）。</li>
+        <li>設計一個提問，幫你<b>找出對他最強烈的那一個解釋</b>。</li>
+        <li>結合最強烈的解釋，接一句<b>未來模擬</b>，讓他看見「若不處理，這個負擔幾年後的畫面」。</li>
+      </ol>
+      <div class="work"><div class="wlbl">你的三種解釋 → 找出最強 → 未來模擬</div><div class="lines lg"></div><div class="lines"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我沒有「幫他決定」負擔是什麼，而是讓他自己聚焦</label>
+        <label><input type="checkbox">未來模擬是畫面，不是威脅</label>
+      </div>
+    </div>
+
+    <!-- Q3 設計題 異議重組環 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-design">設計題・核心</span><span class="q-no">Day2 · 第 3 題</span></div>
+      <div class="q-title">把「紅圈」改造成「綠圈」</div>
+      <p>課堂上的關鍵一頁：面對異議，<b>傳統</b>是「減少・降低・消滅」——用一堆話術往客戶身上推（箭頭向內），結果<b>刺激抗拒</b>；<b>米爾頓</b>是「重組・轉移・擴張」——用提問引導客戶自己走出來（箭頭向外），結果<b>他自己合理化成交</b>。</p>
+      <p>請挑一個你最常遇到的異議（例：<b>「保費太貴了」</b>或<b>「我回去跟家人討論」</b>），分別寫出：</p>
+      <ul>
+        <li><b>紅圈（傳統）</b>：業務通常會脫口而出、往客戶身上推的 3 句話術。</li>
+        <li><b>綠圈（米爾頓）</b>：把它改造成 5 個「引導客戶自己重組」的提問（可套：怎麼說？跟什麼比？何時要用？為了誰？如何讓自己更好？）。</li>
+      </ul>
+      <div class="cards2">
+        <div class="mini k"><h4>紅圈・傳統（往內推的話術）</h4><div class="lines lg" style="margin-top:6px;"></div></div>
+        <div class="mini"><h4>綠圈・米爾頓（往外引的提問）</h4><div class="lines lg" style="margin-top:6px;"></div></div>
+      </div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我的綠圈全部是「問句」，沒有一句是在說服</label>
+        <label><input type="checkbox">問完之後，是「客戶」在講理由，不是我</label>
+      </div>
+    </div>
+
+    <!-- Q4 情境案例 隱喻 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-case">情境案例</span><span class="q-no">Day2 · 第 4 題</span></div>
+      <div class="q-title">用一個隱喻故事，取代一次說教</div>
+      <p>客戶說：「保險現在買不划算啦，錢放我自己這裡比較實在。」</p>
+      <p>請設計一段<b>間接性的隱喻故事</b>（例：有一個朋友…／一座城市的防洪工程…），用故事把「風險與準備」的道理包進去，<b>全程不直接講保險</b>，最後收在一句讓他自己對號入座的話。</p>
+      <div class="work"><div class="wlbl">你的隱喻故事</div><div class="lines lg"></div><div class="lines"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">整段沒有直接說「你應該買保險」</label>
+        <label><input type="checkbox">故事裡有一個他會投射自己進去的角色</label>
+        <label><input type="checkbox">結尾那句話留白，讓他自己接話</label>
+      </div>
+    </div>
+
+    <!-- Q5 角色扮演 完整 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-role">角色扮演（兩人一組）</span><span class="q-no">Day2 · 第 5 題</span></div>
+      <div class="q-title">整合實戰：催化技術 × 無異議成交</div>
+      <p>兩人一組，跑 <b>18 分鐘</b>後互換。這回合要把兩天學的接起來：<b>呼應建立信任 → 深化放大痛點 → 名詞化／隱喻催化 → 異議用綠圈重組 → 未來模擬收尾</b>。</p>
+      <div class="cards2">
+        <div class="mini k"><h4>客戶角色卡：張先生</h4>
+          <ul>
+            <li>50 歲，中小企業主，年收入約 250 萬</li>
+            <li>VAK：偏 V（視覺）— 語速快、愛用「看、清楚、方向」</li>
+            <li>初始態度：自信、覺得「我自己會理財」</li>
+            <li>預設異議：①「這商品利率太低了」 ②「我回去跟太太討論」 ③「投資歸投資，保險歸保險」</li>
+          </ul>
+        </div>
+        <div class="mini"><h4>業務任務卡</h4>
+          <ul>
+            <li>不能一開始就報商品，先建立信任</li>
+            <li>對「利率太低」用綠圈提問，不要辯</li>
+            <li>對「回去討論」用支持／決策者提問，別硬留</li>
+            <li>收尾用一次未來模擬，讓他自己說出下一步</li>
+          </ul>
+        </div>
+      </div>
+      <div class="work"><div class="wlbl">記下：整場的三個關鍵轉折點（他從抗拒→鬆動的瞬間）</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核（ROSB 全流程）</span>
+        <label><input type="checkbox">R 親合：他自信但我沒被他帶著跑，我先建立了信任</label>
+        <label><input type="checkbox">O 目標：我問出了他「真正想要的」，不是他嘴上說不要的</label>
+        <label><input type="checkbox">S 平衡：面對異議我沒有防衛、沒有辯論</label>
+        <label><input type="checkbox">B 彈性：我至少用了 2 種技巧（綠圈重組／隱喻／未來模擬）</label>
+        <label><input type="checkbox">最後是「他自己」說出下一步，不是我逼的</label>
+      </div>
+    </div>
+
+    <!-- Q6 行動作業 -->
+    <div class="q">
+      <div class="q-top"><span class="badge b-action">行動作業（下次上課前）</span><span class="q-no">Day2 · 第 6 題</span></div>
+      <div class="q-title">對真實的人，跑一次「綠圈提問」</div>
+      <p>找一位真實對象（同事、增員對象、或願意配合的客戶），針對一個真實異議，<b>忍住不說服</b>，改用你在第 3 題設計的「綠圈提問」跑一次。事後記錄：</p>
+      <ul>
+        <li>我原本最想脫口而出的那句「紅圈話術」是什麼？</li>
+        <li>我改用提問後，對方的反應跟平常有什麼不一樣？</li>
+        <li>我在哪一刻最想忍不住「切回去說服」？</li>
+      </ul>
+      <div class="work"><div class="wlbl">實戰後記</div><div class="lines lg"></div></div>
+      <div class="check"><span class="lbl">自我檢核</span>
+        <label><input type="checkbox">我全程忍住沒有切回「說服模式」</label>
+        <label><input type="checkbox">我觀察到對方「自己講出理由」的至少一個瞬間</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ethics -->
+  <section class="ethics">
+    <h3>兩天作業的底線：引導 ≠ 操控</h3>
+    <p>這些技術很有力量，正因為有力量，更要守住一件事：<b>真正的催眠式銷售，不是操控客戶，而是引導客戶說出他本來就需要面對的問題。</b></p>
+    <p>我們面對的是保險與投資型商品——受金管會監理、攸關家庭長期財務。所以：需求導向、充分揭露、不誇大報酬、不製造不實急迫感；投資型保單一律以長期配置、保障、家庭責任為框架。技術是用來降低防衛、讓客戶被理解，不是用來讓他買不需要的東西。</p>
+    <p style="color:var(--teal-d); font-weight:700; margin-top:12px;">學得會，用得出來，業績改變看得見。</p>
+  </section>
+
+  <div class="btns"><button class="btn" onclick="window.print()">列印 / 存成 PDF</button></div>
+  <div class="pill-line">米爾頓殿堂・兩天實戰作業（學員版）　│　徐承庚　·　IG @roger820510　·　LINE @nlplife</div>
+</div>
+<script>
+  // 把所有虛線作答框變成可點擊輸入的欄位，並依標題自動帶入提示文字
+  document.querySelectorAll('.lines').forEach(function(el){
+    el.setAttribute('contenteditable','true');
+    el.setAttribute('spellcheck','false');
+    var lbl='';
+    var work = el.closest('.work');
+    if(work){ var w = work.querySelector('.wlbl'); if(w) lbl = w.textContent.trim(); }
+    if(!lbl){ var mini = el.closest('.mini'); if(mini){ var h = mini.querySelector('h4'); if(h) lbl = h.textContent.trim(); } }
+    el.setAttribute('data-ph', lbl ? ('點這裡輸入：' + lbl + '…') : '點這裡輸入你的答案…');
+  });
+</script>
+</body>
+</html>
