@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台股正2 長期回測實驗室 ｜ 自選任意時間區間 ｜ 徐老師</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#1E1B4B; --purple:#2E1065; --dark:#090C14;
+  --amber:#D97706; --amber-deep:#B45309; --amber-bright:#F59E0B;
+  --red:#DC2626; --green:#059669;
+  --ink:#1E1B4B; --g400:#6E6B8A; --g600:#94909f;
+  --card:#F8F7FC; --card2:#F2F0FA; --line:#E4E1F0;
+  --idx:#2563EB; --lev:#DC2626; --ideal:#D97706;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans TC','Inter',sans-serif;font-feature-settings:"palt";
+  background:radial-gradient(1100px 560px at 82% -12%,rgba(217,119,6,.07),transparent 60%),
+    radial-gradient(820px 460px at 0% 8%,rgba(37,99,235,.05),transparent 55%),#FFFFFF;
+  color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+.tag{display:inline-block;font-size:12.5px;letter-spacing:.12em;color:var(--amber);
+  border:1px solid var(--amber);border-radius:999px;padding:3px 13px;font-weight:700}
+h1{font-size:clamp(24px,4vw,40px);font-weight:900;line-height:1.15;margin:14px 0 8px}
+h2{font-size:clamp(20px,3vw,28px);font-weight:900;margin:0 0 6px}
+h3{font-size:18px;font-weight:700}
+.amber{color:var(--amber)} .red{color:var(--red)} .green{color:var(--green)} .idxc{color:var(--idx)}
+.muted{color:var(--g400)}
+header.hero{padding:40px 0 8px}
+header .lead{color:#4B4869;max-width:820px;font-size:clamp(15px,1.9vw,18px)}
+section{padding:30px 0}
+
+/* SIMULATOR */
+.sim{background:linear-gradient(180deg,#FFFFFF,#FAF9FD);border:1px solid var(--line);
+  border-radius:22px;padding:22px;box-shadow:0 24px 60px -34px rgba(30,27,75,.28)}
+.sim-grid{display:grid;grid-template-columns:310px 1fr;gap:24px}
+.panel-title{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--g400);text-transform:uppercase;margin-bottom:9px}
+
+/* interval picker */
+.interval{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.range-read{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.range-read .from,.range-read .to{font-family:'Inter';font-weight:900;font-size:20px;color:var(--amber)}
+.range-read .arrow{color:var(--g600);font-size:15px}
+.range-read .len{font-size:12px;color:var(--g400)}
+.dual{position:relative;height:34px;margin:6px 2px 2px}
+.dual input[type=range]{position:absolute;left:0;top:12px;width:100%;margin:0;pointer-events:none;-webkit-appearance:none;background:none}
+.dual input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;border-radius:50%;
+  background:#FFFFFF;border:3px solid var(--amber);cursor:pointer;box-shadow:0 1px 5px rgba(30,27,75,.35);margin-top:0}
+.dual input[type=range]::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border-radius:50%;background:#FFFFFF;border:3px solid var(--amber);cursor:pointer}
+.dual .track{position:absolute;left:0;top:16px;height:6px;width:100%;border-radius:6px;background:#E4E1F0}
+.dual .fill{position:absolute;top:16px;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--amber-bright),var(--amber))}
+.presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.presets button{font-family:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);
+  background:#FFFFFF;color:#4B4869;padding:6px 11px;font-size:12.5px;font-weight:600;transition:.15s}
+.presets button:hover{border-color:var(--amber);color:var(--amber)}
+.presets button:disabled{opacity:.4;cursor:not-allowed}
+
+.ctl{margin-bottom:15px}
+.ctl label{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:7px}
+.ctl label .v{color:var(--amber);font-family:'Inter';font-weight:800}
+.ctl .hint{font-size:11px;color:var(--g600);margin-top:4px}
+input[type=range].s{width:100%;-webkit-appearance:none;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--amber-bright),var(--amber));outline:none}
+input[type=range].s::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:#FFFFFF;border:3px solid var(--amber);cursor:pointer;box-shadow:0 1px 4px rgba(30,27,75,.3)}
+input[type=range].s::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:#FFFFFF;border:3px solid var(--amber);cursor:pointer}
+.seg{display:flex;gap:6px;margin-top:4px}
+.seg button{flex:1;font-family:inherit;cursor:pointer;border:1px solid var(--line);background:#FFFFFF;color:var(--g400);padding:7px;border-radius:9px;font-weight:700;font-size:12.5px}
+.seg button.active{color:#fff;background:var(--amber);border-color:var(--amber)}
+
+.chart-box{position:relative}
+.chart-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12.5px}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:#4B4869}
+.dot{width:11px;height:3px;border-radius:2px;display:inline-block}
+.toggle{display:flex;gap:6px}
+.toggle button{padding:6px 10px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid var(--line);background:#FFFFFF;color:var(--g400);border-radius:8px;font-weight:700}
+.toggle button.active{background:var(--amber);color:#fff;border-color:var(--amber)}
+canvas{width:100%;display:block;border-radius:12px;background:#FFFFFF;border:1px solid var(--line)}
+.tooltip{position:absolute;pointer-events:none;background:#FFFFFF;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12px;color:var(--ink);opacity:0;transition:opacity .1s;white-space:nowrap;z-index:6;box-shadow:0 8px 24px -10px rgba(30,27,75,.25)}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin-top:18px}
+.rcard{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 14px}
+.rcard.cg{background:linear-gradient(180deg,#ECFBF4,#F6FBF9);border-color:#BFE8D4}
+.rcard.cr{background:linear-gradient(180deg,#FEF1F1,#FBF6F8);border-color:#F5CDCD}
+.rcard.ca{background:linear-gradient(180deg,#FEF5E7,#FBF8F4);border-color:#F1D6A8}
+.rcard .rl{font-size:12px;color:var(--g400)}
+.rcard .rn{font-family:'Inter';font-weight:900;font-size:22px;margin-top:4px;line-height:1.05;color:var(--ink)}
+.rcard .rn.red{color:var(--red)} .rcard .rn.green{color:var(--green)} .rcard .rn.amber{color:var(--amber)}
+.rcard .rs{font-size:11px;color:var(--g600);margin-top:3px}
+.callout{margin-top:16px;background:linear-gradient(135deg,rgba(217,119,6,.09),rgba(37,99,235,.05));border:1px solid rgba(217,119,6,.35);border-radius:13px;padding:15px 17px;font-size:14.5px}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:8px}
+.xcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.xcard .k{font-family:'Inter';font-weight:900;font-size:26px;color:var(--amber)}
+.xcard h3{margin:8px 0 7px;font-size:17px}
+.xcard p{font-size:14px;color:#4B4869}
+.method{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.method li{list-style:none;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px;color:#4B4869}
+.method li:last-child{border-bottom:none}
+.method b{color:var(--ink)}
+.quote{text-align:center;padding:34px 20px 8px}
+.quote .big{font-size:clamp(19px,3vw,28px);font-weight:900;max-width:780px;margin:0 auto}
+.quote em{color:var(--amber);font-style:normal}
+.disclaim{font-size:12px;color:var(--g600);border-top:1px solid var(--line);padding:22px 0 54px;margin-top:16px}
+@media(max-width:880px){.sim-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="pw-gate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#1E1B4B,#2E1065);display:flex;align-items:center;justify-content:center;">
+<div style="background:#fff;border-radius:16px;padding:40px 36px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+<h2 style="margin:0 0 8px;color:#1E1B4B;font-size:1.4rem;">🔒 請輸入密碼</h2>
+<p style="color:#6E6B8A;font-size:.9rem;margin-bottom:20px;">此工具僅限學員使用</p>
+<input type="password" id="pw-input" placeholder="請輸入密碼" autofocus
+  style="width:100%;padding:12px 16px;border:2px solid #E4E1F0;border-radius:10px;font-size:1.05rem;outline:none;margin-bottom:12px;text-align:center;"
+  onkeydown="if(event.key==='Enter')checkPw()">
+<button onclick="checkPw()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1E1B4B,#2E1065);color:#fff;border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;">解鎖</button>
+<div id="pw-err" style="color:#DC2626;margin-top:10px;font-size:.9rem;"></div>
+</div>
+</div>
+<script>
+if(sessionStorage.getItem('pw-ok')==='1'){document.getElementById('pw-gate').style.display='none';}
+function checkPw(){var h='0576766efa0644463dbdae6a0e336a14fc3a0360394420581543e4c4eab559de',i=document.getElementById('pw-input'),v=i.value;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(b){var a=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(a===h){document.getElementById('pw-gate').style.display='none';sessionStorage.setItem('pw-ok','1')}else{document.getElementById('pw-err').textContent='密碼錯誤，請重試';i.value='';i.focus()}})}
+</script>
+
+<header class="hero"><div class="wrap">
+  <span class="tag">徐老師 · 財商實驗室</span>
+  <h1>台股「正2」長期回測實驗室</h1>
+  <p class="lead">自己設定<span class="amber">任意時間區間</span>(例如 1996–2005、1999–2008、涵蓋 2000 網路泡沫或 2008 金融海嘯),
+  用台灣證交所真實的加權指數,模擬「正向兩倍槓桿」在那段期間會怎麼走。
+  拖動下面的滑桿,親手驗證槓桿到底是放大財富、還是放大風險。</p>
+</div></header>
+
+<section style="padding-top:14px"><div class="wrap">
+  <div class="sim">
+   <div class="sim-grid">
+    <div class="controls">
+      <div class="interval">
+        <div class="panel-title">① 選擇回測區間</div>
+        <div class="range-read">
+          <span class="from" id="fromLbl">—</span>
+          <span class="arrow">→</span>
+          <span class="to" id="toLbl">—</span>
+        </div>
+        <div class="len muted" id="lenLbl"></div>
+        <div class="dual" id="dual">
+          <div class="track"></div><div class="fill" id="fill"></div>
+          <input type="range" id="rStart" min="0" max="1" value="0">
+          <input type="range" id="rEnd" min="0" max="1" value="1">
+        </div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="panel-title">② 調整參數</div>
+      <div class="ctl">
+        <label>槓桿倍數 <span class="v" id="levV">2.0×</span></label>
+        <input class="s" type="range" id="lev" min="1" max="3" step="0.5" value="2">
+      </div>
+      <div class="ctl">
+        <div class="panel-title" style="margin-bottom:6px">投入方式</div>
+        <div class="seg" id="modeSeg"><button data-m="lump" class="active">單筆</button><button data-m="dca">定期定額（每月）</button></div>
+      </div>
+      <div class="ctl">
+        <label><span id="amtLbl">單筆投入金額</span> <span class="v" id="amtV">100,000</span></label>
+        <input class="s" type="range" id="amt" min="10000" max="1000000" step="10000" value="100000">
+      </div>
+      <div class="ctl">
+        <label>內扣費用率 / 年 <span class="v" id="expV">1.13%</span></label>
+        <input class="s" type="range" id="exp" min="0" max="3" step="0.01" value="1.13">
+        <div class="hint">00631L：經理費1.00%＋保管費0.04%＋其他</div>
+      </div>
+      <div class="ctl">
+        <div class="panel-title" style="margin-bottom:6px">縱軸刻度</div>
+        <div class="seg" id="scaleSeg"><button data-s="lin" class="active">一般</button><button data-s="log">對數</button></div>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-head">
+        <div class="legend" id="legend">
+          <span><i class="dot" style="background:var(--idx)"></i>加權指數</span>
+          <span><i class="dot" style="background:var(--lev)"></i>正2（含費用）</span>
+          <span><i class="dot" style="background:var(--ideal)"></i>理想正2（零費用）</span>
+        </div>
+        <div class="toggle" id="viewSeg"><button data-v="nav" class="active">淨值走勢</button><button data-v="dd">回撤深度</button></div>
+      </div>
+      <canvas id="chart" height="316"></canvas>
+      <div class="tooltip" id="tip"></div>
+      <div class="results" id="results"></div>
+      <div class="callout" id="callout"></div>
+    </div>
+   </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>三個你一定要懂的機制</h2>
+  <p class="muted" style="margin-bottom:16px">問題根本不在「費用」,而在你搞不清楚「槓桿型 ETF」的運作方式。</p>
+  <div class="cards">
+    <div class="xcard"><div class="k">01</div><h3>它追的是「單日」不是「長期」</h3>
+      <p>「正向兩倍」是每天(或每期)把槓桿重設回 2 倍,追的是<b>當期</b>的兩倍報酬,不是整段期間的兩倍。市場一來回震盪,複利路徑就會和你想的「×2」差很多——這叫<b>波動耗損</b>。</p></div>
+    <div class="xcard"><div class="k">02</div><h3>回撤放大 × 復原不對稱</h3>
+      <p>下跌時兩倍槓桿讓回撤又深又快。更殘忍的是數學:跌 50% 要漲 100% 才回本,跌 <b>80%</b> 要漲 <b>400%</b>,跌 <b>90%</b> 要漲 <b>900%</b>。抄底反彈往往救不回深度套牢的槓桿部位。</p></div>
+    <div class="xcard"><div class="k">03</div><h3>費用是配角,機制才是主角</h3>
+      <p>你問「買賣要付哪些費用」——很好,但別把注意力放錯。內扣、融資、手續費長期通常只拖累個位數%;真正決定生死的,是進場點、波動度與槓桿倍數。</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>方法論與資料來源（誠實揭露）</h2>
+  <div class="method"><ul>
+    <li><b>指數資料：</b>台灣證券交易所（TWSE）官方發行量加權股價指數，<b>每月月底收盤</b>，涵蓋 <span id="covRange">—</span>，皆為史實。</li>
+    <li><b>正2 淨值模型：</b>每期 =（前一期淨值）×（1 ＋ 槓桿×指數當期漲跌 − 內扣費用 − 融資成本 − 進出成本）,每期重設回固定槓桿。這就是「正向倍數」商品的運作邏輯。</li>
+    <li><b>費用參數：</b>內扣費用率預設 1.13%（經理費 1.00%＋保管費 0.04%＋其他，可自行調整）。另有兩項已依 00631L 常見水準<b>預設好、不顯示在畫面上</b>以利閱讀：融資／換匯成本 1.5%/年（槓桿借款端的隱含資金成本）、進出手續費 6 折（0.1425%×0.6）＋賣出證交稅 0.1%。模擬仍會把這些成本計入。</li>
+    <li><b>四個必須誠實說的限制：</b>①00631L <b>2014 年才成立</b>，早年並不存在,這是「假如當年就有」的合成模擬。②00631L 追蹤<b>台灣50 指數</b>,本工具用<b>加權指數</b>當代理。③本工具用<b>月線</b>資料,而真實 00631L 是<b>每日</b>重設,實際的日內波動耗損會比這裡更嚴重——換句話說,<b>真實結果通常比模擬更差</b>。④未計入停牌、基差、追蹤誤差。</li>
+    <li><b>用途：</b>投資風險教育,理解槓桿型 ETF 的波動耗損與回撤放大,<b>不構成任何買賣建議或報酬承諾</b>。</li>
+  </ul></div>
+</div></section>
+
+<section class="quote"><div class="wrap">
+  <div class="big">工具本身沒有錯。錯的是——<em>把「單期槓桿」當成「長期兩倍」,把投機當成配置。</em></div>
+</div></section>
+
+<div class="wrap"><div class="disclaim">
+  ⚠️ 免責聲明:本頁為根據台灣證交所公開歷史指數所做之學術性合成回測,僅供投資風險教育之用,不代表任何實際商品之過去或未來績效,亦不構成投資建議或報酬保證。槓桿／反向 ETF 為「單日」報酬型商品,不適合長期持有,投資人申購前應詳閱公開說明書並自負風險。過去績效不代表未來表現。
+</div></div>
+
+<script>
+const MDATA=[["1996-01", 4763.4], ["1996-02", 4797.67], ["1996-03", 5032.35], ["1996-04", 6134.28], ["1996-05", 5966.82], ["1996-06", 6560.41], ["1996-07", 6106.97], ["1996-08", 6324.6], ["1996-09", 6504.68], ["1996-10", 6426.09], ["1996-11", 6826.06], ["1996-12", 6933.94], ["1997-01", 7283.4], ["1997-02", 7875.32], ["1997-03", 8004.2], ["1997-04", 8485.66], ["1997-05", 8163.11], ["1997-06", 9030.28], ["1997-07", 10066.35], ["1997-08", 9756.47], ["1997-09", 8708.83], ["1997-10", 7313.4], ["1997-11", 7797.19], ["1997-12", 8187.27], ["1998-01", 8085.47], ["1998-02", 9202.56], ["1998-03", 9091.16], ["1998-04", 8304.21], ["1998-05", 7903.34], ["1998-06", 7548.81], ["1998-07", 7653.51], ["1998-08", 6550.11], ["1998-09", 6833.95], ["1998-10", 7165.98], ["1998-11", 7177.22], ["1998-12", 6418.43], ["1999-01", 5998.32], ["1999-02", 6318.52], ["1999-03", 6881.72], ["1999-04", 7371.17], ["1999-05", 7316.57], ["1999-06", 8467.37], ["1999-07", 7326.75], ["1999-08", 8157.73], ["1999-09", 7598.79], ["1999-10", 7854.85], ["1999-11", 7720.87], ["1999-12", 8448.84], ["2000-01", 9744.89], ["2000-02", 9435.94], ["2000-03", 9854.95], ["2000-04", 8777.35], ["2000-05", 8939.52], ["2000-06", 8265.09], ["2000-07", 8114.92], ["2000-08", 7616.98], ["2000-09", 6185.14], ["2000-10", 5544.18], ["2000-11", 5256.93], ["2000-12", 4739.09], ["2001-01", 5936.2], ["2001-02", 5674.69], ["2001-03", 5797.92], ["2001-04", 5381.67], ["2001-05", 5048.86], ["2001-06", 4883.43], ["2001-07", 4352.98], ["2001-08", 4509.44], ["2001-09", 3636.94], ["2001-10", 3903.49], ["2001-11", 4441.12], ["2001-12", 5551.24], ["2002-01", 5872.14], ["2002-02", 5696.11], ["2002-03", 6167.47], ["2002-04", 6065.73], ["2002-05", 5675.65], ["2002-06", 5153.71], ["2002-07", 4940.38], ["2002-08", 4764.94], ["2002-09", 4191.81], ["2002-10", 4579.14], ["2002-11", 4646.69], ["2002-12", 4452.45], ["2003-01", 5015.16], ["2003-02", 4432.46], ["2003-03", 4321.22], ["2003-04", 4148.07], ["2003-05", 4555.9], ["2003-06", 4872.15], ["2003-07", 5318.34], ["2003-08", 5650.83], ["2003-09", 5611.41], ["2003-10", 6045.12], ["2003-11", 5771.77], ["2003-12", 5890.69], ["2004-01", 6375.38], ["2004-02", 6750.54], ["2004-03", 6522.19], ["2004-04", 6117.81], ["2004-05", 5977.84], ["2004-06", 5839.44], ["2004-07", 5420.57], ["2004-08", 5765.54], ["2004-09", 5845.69], ["2004-10", 5705.93], ["2004-11", 5844.76], ["2004-12", 6139.69], ["2005-01", 5994.23], ["2005-02", 6207.83], ["2005-03", 6005.88], ["2005-04", 5818.07], ["2005-05", 6011.56], ["2005-06", 6241.94], ["2005-07", 6311.98], ["2005-08", 6033.47], ["2005-09", 6118.61], ["2005-10", 5764.3], ["2005-11", 6203.47], ["2005-12", 6548.34], ["2006-01", 6532.18], ["2006-02", 6561.63], ["2006-03", 6613.97], ["2006-04", 7171.77], ["2006-05", 6846.95], ["2006-06", 6704.41], ["2006-07", 6454.58], ["2006-08", 6611.77], ["2006-09", 6883.05], ["2006-10", 7021.32], ["2006-11", 7567.72], ["2006-12", 7823.72], ["2007-01", 7699.64], ["2007-02", 7901.96], ["2007-03", 7884.41], ["2007-04", 7875.42], ["2007-05", 8144.95], ["2007-06", 8883.21], ["2007-07", 9287.25], ["2007-08", 8982.16], ["2007-09", 9476.52], ["2007-10", 9711.37], ["2007-11", 8586.4], ["2007-12", 8506.28], ["2008-01", 7521.13], ["2008-02", 8412.76], ["2008-03", 8572.59], ["2008-04", 8919.92], ["2008-05", 8619.08], ["2008-06", 7523.54], ["2008-07", 7024.06], ["2008-08", 7046.11], ["2008-09", 5719.28], ["2008-10", 4870.66], ["2008-11", 4460.49], ["2008-12", 4591.22], ["2009-01", 4247.97], ["2009-02", 4557.15], ["2009-03", 5210.84], ["2009-04", 5992.57], ["2009-05", 6890.44], ["2009-06", 6432.16], ["2009-07", 7077.71], ["2009-08", 6825.95], ["2009-09", 7509.17], ["2009-10", 7340.08], ["2009-11", 7582.21], ["2009-12", 8188.11], ["2010-01", 7640.44], ["2010-02", 7436.1], ["2010-03", 7920.06], ["2010-04", 8004.25], ["2010-05", 7373.98], ["2010-06", 7329.37], ["2010-07", 7760.63], ["2010-08", 7616.28], ["2010-09", 8237.78], ["2010-10", 8287.09], ["2010-11", 8372.48], ["2010-12", 8972.5], ["2011-01", 9145.35], ["2011-02", 8599.65], ["2011-03", 8683.3], ["2011-04", 9007.87], ["2011-05", 8988.84], ["2011-06", 8652.59], ["2011-07", 8644.18], ["2011-08", 7741.36], ["2011-09", 7225.38], ["2011-10", 7587.69], ["2011-11", 6904.12], ["2011-12", 7072.08], ["2012-01", 7517.08], ["2012-02", 8121.44], ["2012-03", 7933.0], ["2012-04", 7501.72], ["2012-05", 7301.5], ["2012-06", 7296.28], ["2012-07", 7270.49], ["2012-08", 7397.06], ["2012-09", 7715.16], ["2012-10", 7166.05], ["2012-11", 7580.17], ["2012-12", 7699.5], ["2013-01", 7850.02], ["2013-02", 7897.98], ["2013-03", 7918.61], ["2013-04", 8093.66], ["2013-05", 8254.8], ["2013-06", 8062.21], ["2013-07", 8107.94], ["2013-08", 8021.89], ["2013-09", 8173.87], ["2013-10", 8450.06], ["2013-11", 8406.83], ["2013-12", 8611.51], ["2014-01", 8462.57], ["2014-02", 8639.58], ["2014-03", 8849.28], ["2014-04", 8791.44], ["2014-05", 9075.91], ["2014-06", 9393.07], ["2014-07", 9315.85], ["2014-08", 9436.27], ["2014-09", 8966.92], ["2014-10", 8974.76], ["2014-11", 9187.15], ["2014-12", 9307.26], ["2015-01", 9361.91], ["2015-02", 9622.1], ["2015-03", 9586.44], ["2015-04", 9820.05], ["2015-05", 9701.07], ["2015-06", 9323.02], ["2015-07", 8665.34], ["2015-08", 8174.92], ["2015-09", 8181.24], ["2015-10", 8554.31], ["2015-11", 8320.61], ["2015-12", 8338.06], ["2016-01", 8145.21], ["2016-02", 8411.16], ["2016-03", 8744.83], ["2016-04", 8377.9], ["2016-05", 8535.59], ["2016-06", 8666.58], ["2016-07", 8984.41], ["2016-08", 9068.85], ["2016-09", 9166.85], ["2016-10", 9290.12], ["2016-11", 9240.71], ["2016-12", 9253.5], ["2017-01", 9447.95], ["2017-02", 9750.47], ["2017-03", 9811.52], ["2017-04", 9872.0], ["2017-05", 10040.72], ["2017-06", 10395.07], ["2017-07", 10427.33], ["2017-08", 10585.78], ["2017-09", 10383.94], ["2017-10", 10793.8], ["2017-11", 10560.44], ["2017-12", 10642.86], ["2018-01", 11103.79], ["2018-02", 10815.47], ["2018-03", 10919.49], ["2018-04", 10657.88], ["2018-05", 10874.96], ["2018-06", 10836.91], ["2018-07", 11057.51], ["2018-08", 11063.94], ["2018-09", 11006.34], ["2018-10", 9802.13], ["2018-11", 9888.03], ["2018-12", 9727.41], ["2019-01", 9932.26], ["2019-02", 10389.17], ["2019-03", 10641.04], ["2019-04", 10967.73], ["2019-05", 10498.49], ["2019-06", 10730.83], ["2019-07", 10823.81], ["2019-08", 10618.05], ["2019-09", 10829.68], ["2019-10", 11358.71], ["2019-11", 11489.57], ["2019-12", 11997.14], ["2020-01", 11495.1], ["2020-02", 11292.17], ["2020-03", 9708.06], ["2020-04", 10992.14], ["2020-05", 10942.16], ["2020-06", 11621.24], ["2020-07", 12664.8], ["2020-08", 12591.45], ["2020-09", 12515.61], ["2020-10", 12546.34], ["2020-11", 13722.89], ["2020-12", 14732.53], ["2021-01", 15138.31], ["2021-02", 15953.8], ["2021-03", 16431.13], ["2021-04", 17566.66], ["2021-05", 17068.43], ["2021-06", 17755.46], ["2021-07", 17247.41], ["2021-08", 17490.29], ["2021-09", 16934.77], ["2021-10", 16987.41], ["2021-11", 17427.76], ["2021-12", 18218.84], ["2022-01", 17674.4], ["2022-02", 17652.18], ["2022-03", 17693.47], ["2022-04", 16592.18], ["2022-05", 16807.77], ["2022-06", 14825.73], ["2022-07", 15000.07], ["2022-08", 15095.44], ["2022-09", 13424.58], ["2022-10", 12949.75], ["2022-11", 14879.55], ["2022-12", 14137.69], ["2023-01", 15265.2], ["2023-02", 15503.79], ["2023-03", 15868.06], ["2023-04", 15579.18], ["2023-05", 16578.96], ["2023-06", 16915.54], ["2023-07", 17145.43], ["2023-08", 16634.51], ["2023-09", 16353.74], ["2023-10", 16001.27], ["2023-11", 17433.85], ["2023-12", 17930.81], ["2024-01", 17889.56], ["2024-02", 18966.77], ["2024-03", 20294.45], ["2024-04", 20396.6], ["2024-05", 21174.22], ["2024-06", 23032.25], ["2024-07", 22199.35], ["2024-08", 22268.09], ["2024-09", 22224.54], ["2024-10", 22820.43], ["2024-11", 22262.5], ["2024-12", 23035.1], ["2025-01", 23525.41], ["2025-02", 23053.18], ["2025-03", 20695.9], ["2025-04", 20235.03], ["2025-05", 21347.3], ["2025-06", 22256.02], ["2025-07", 23542.52], ["2025-08", 24233.1], ["2025-09", 25820.54], ["2025-10", 28233.35], ["2025-11", 27626.48], ["2025-12", 28963.6], ["2026-01", 32063.75], ["2026-02", 35414.49], ["2026-03", 31722.99], ["2026-04", 38926.63], ["2026-05", 44256.8], ["2026-06", 45337.91]];
+
+const DATES=MDATA.map(x=>x[0]), CLOSES=MDATA.map(x=>x[1]), N=DATES.length;
+const per=12; // periods per year (monthly)
+
+function simulate(a,z,p){
+  const idx=[1],ideal=[1],lev=[1];
+  const de=p.exp/100/per, df=(p.lev-1)*p.fin/100/per;
+  for(let t=a+1;t<=z;t++){
+    const r=CLOSES[t]/CLOSES[t-1]-1;
+    idx.push(idx[idx.length-1]*(1+r));
+    ideal.push(ideal[ideal.length-1]*(1+p.lev*r));
+    let nav=lev[lev.length-1]*(1+p.lev*r-de-df); if(nav<0)nav=0;
+    lev.push(nav);
+  }
+  const fee=0.001425*(p.disc/10), net=lev.map((v,i)=>{let x=v*(1-fee); if(i===lev.length-1)x*=(1-fee-0.001); return x;});
+  return {idx,ideal,lev,net};
+}
+function mdd(s){let pk=s[0],m=0;for(const v of s){if(v>pk)pk=v;const d=v/pk-1;if(d<m)m=d;}return m;}
+function toDD(s){let pk=s[0];return s.map(v=>{if(v>pk)pk=v;return v/pk-1;});}
+function fmtPct(x){return (x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+function fmtMoney(x){return Math.round(x).toLocaleString('en-US');}
+function di(ym){return DATES.indexOf(ym);}
+function clampIdx(i){return Math.max(0,Math.min(N-1,i));}
+
+const state={a:0,z:N-1,lev:2,amt:100000,exp:1.13,fin:1.5,disc:6,scale:'lin',view:'nav',mode:'lump'};
+
+/* presets: [label, startYM, endYM] */
+const PRESETS=[
+  ['全期',DATES[0],DATES[N-1]],
+  ['2000 網路泡沫','2000-01','2003-12'],
+  ['2008 金融海嘯','2007-10','2009-06'],
+  ['2020 疫情','2019-12','2020-12'],
+  ['2022 空頭','2021-12','2022-10'],
+  ['近5年 AI大多頭','2021-01',DATES[N-1]],
+];
+
+/* chart */
+const cv=document.getElementById('chart'),ctx=cv.getContext('2d'),tip=document.getElementById('tip');
+let CUR=null;
+function resize(){const r=cv.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=316*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw();}
+function draw(){
+  if(!CUR)return;const W=cv.width/devicePixelRatio,H=316;ctx.clearRect(0,0,W,H);
+  const pad={l:66,r:14,t:14,b:26},gw=W-pad.l-pad.r,gh=H-pad.t-pad.b;
+  const S=CUR.series,dates=CUR.dates,n=S[0].data.length;
+  let vals=[];S.forEach(s=>{if(s.show)vals=vals.concat(s.data);});
+  const isDD=CUR.isDD;let ymin=Math.min(...vals),ymax=Math.max(...vals);
+  const log=state.scale==='log'&&!isDD;
+  if(isDD){ymin=Math.min(...vals,0);ymax=0;}
+  const yT=v=>log?Math.log10(Math.max(v,1e-6)):v;let lo=yT(ymin),hi=yT(ymax);
+  if(!isDD){const pd=(hi-lo)*0.08||0.1;lo-=pd;hi+=pd;}
+  const X=i=>pad.l+gw*(n<=1?0:i/(n-1)),Y=v=>pad.t+gh*(1-(yT(v)-lo)/(hi-lo||1));
+  ctx.font='11px Inter';ctx.textBaseline='middle';
+  for(let g=0;g<=5;g++){const yy=pad.t+gh*g/5;ctx.strokeStyle='rgba(30,27,75,.10)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(W-pad.r,yy);ctx.stroke();
+    const AM=CUR.absolute?1:state.amt;const val=hi-(hi-lo)*g/5;let lbl=isDD?(val*100).toFixed(0)+'%':fmtMoney((log?Math.pow(10,val):val)*AM);
+    ctx.fillStyle='#8983A8';ctx.textAlign='right';ctx.fillText(lbl,pad.l-8,yy);}
+  ctx.textAlign='center';let last='';const step=Math.max(1,Math.floor(n/8));
+  for(let i=0;i<n;i+=step){const yr=dates[i].slice(0,4);if(yr!==last){ctx.fillStyle='#8983A8';ctx.fillText(dates[i],X(i),H-10);last=yr;}}
+  if(isDD){ctx.strokeStyle='rgba(30,27,75,.28)';ctx.beginPath();ctx.moveTo(pad.l,Y(0));ctx.lineTo(W-pad.r,Y(0));ctx.stroke();}
+  S.forEach(s=>{if(!s.show)return;
+    if(s.fill){ctx.beginPath();for(let i=0;i<n;i++){const x=X(i),y=Y(s.data[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+      ctx.lineTo(X(n-1),Y(0));ctx.lineTo(X(0),Y(0));ctx.closePath();ctx.fillStyle=s.fillc;ctx.fill();}
+    ctx.beginPath();ctx.lineWidth=s.w||2;ctx.strokeStyle=s.color;if(s.dash)ctx.setLineDash(s.dash);else ctx.setLineDash([]);
+    for(let i=0;i<n;i++){const x=X(i),y=Y(s.data[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();ctx.setLineDash([]);});
+  CUR._g={X,Y,n,pad,gw,W};
+}
+cv.addEventListener('mousemove',e=>{if(!CUR||!CUR._g)return;const g=CUR._g,rect=cv.getBoundingClientRect();
+  let i=Math.round((e.clientX-rect.left-g.pad.l)/g.gw*(g.n-1));i=Math.max(0,Math.min(g.n-1,i));
+  let html='<b>'+CUR.dates[i]+'</b>';CUR.series.forEach(s=>{if(!s.show)return;
+    let val=CUR.isDD?(s.data[i]*100).toFixed(1)+'%':fmtMoney(s.data[i]*(CUR.absolute?1:state.amt))+' 元';
+    html+='<br><span style="color:'+s.color+'">■</span> '+s.name+'：<b>'+val+'</b>';});
+  tip.innerHTML=html;tip.style.opacity=1;let tx=g.X(i)+14;if(tx>g.W-165)tx=g.X(i)-tip.offsetWidth-14;tip.style.left=tx+'px';tip.style.top='22px';});
+cv.addEventListener('mouseleave',()=>tip.style.opacity=0);
+
+function setLegend(items){document.getElementById('legend').innerHTML=items.map(it=>'<span><i class="dot" style="background:'+it.c+'"></i>'+it.n+'</span>').join('');}
+
+function update(){
+  const a=state.a,z=state.z;if(z<=a){document.getElementById('callout').innerHTML='請選擇至少跨一個月的區間。';return;}
+  const p={lev:state.lev,exp:state.exp,fin:state.fin,disc:state.disc};
+  const r=simulate(a,z,p),dates=DATES.slice(a,z+1);
+  CUR=CUR||{};CUR.dates=dates;
+  if(state.mode==='dca'){updateDCA(r,dates,p);return;}
+  CUR.absolute=false;CUR.isDD=state.view==='dd';
+  const idxRet=r.idx.at(-1)-1,netRet=r.net.at(-1)-1,idealRet=r.ideal.at(-1)-1,naive=p.lev*idxRet;
+  const decay=idealRet-naive,feeDrag=netRet-idealRet,ddIdx=mdd(r.idx),ddNet=mdd(r.net);
+  const recov=ddNet<=-0.999?Infinity:(1/(1+ddNet)-1);
+  if(CUR.isDD){setLegend([{n:'加權指數 回撤',c:'#2563EB'},{n:'正2 回撤',c:'#DC2626'}]);CUR.series=[
+    {name:'加權指數 回撤',data:toDD(r.idx),color:'#2563EB',w:2,show:true,fill:true,fillc:'rgba(37,99,235,.10)'},
+    {name:'正2 回撤',data:toDD(r.net),color:'#DC2626',w:2.4,show:true,fill:true,fillc:'rgba(220,38,38,.12)'}];
+  }else{setLegend([{n:'加權指數',c:'#2563EB'},{n:'正2（含費用）',c:'#DC2626'},{n:'理想正2（零費用）',c:'#D97706'}]);CUR.series=[
+    {name:'加權指數',data:r.idx,color:'#2563EB',w:2,show:true},
+    {name:'理想正2(零費用)',data:r.ideal,color:'#D97706',w:1.6,dash:[5,4],show:true},
+    {name:'正2(含費用)',data:r.net,color:'#DC2626',w:2.6,show:true}];}
+  draw();
+  const R=document.getElementById('results');
+  R.innerHTML=card('指數 報酬',fmtPct(idxRet),'期末/期初',idxRet<0?'red':'green')
+   +card('正2 報酬',fmtPct(netRet),'含全部費用',netRet<0?'red':'green')
+   +card('正2 最大回撤',(ddNet*100).toFixed(0)+'%','區間內谷底',ddNet<-0.5?'red':'amber')
+   +card(fmtMoney(state.amt)+' 變成',fmtMoney(state.amt*(1+netRet)),'指數同期 '+fmtMoney(state.amt*(1+idxRet)),netRet<0?'red':'green')
+   +card('路徑效果（複利）',fmtPct(decay),'理想正2 −（'+p.lev+'×指數）；趨勢盤為正、震盪盤為負',decay<0?'red':'green')
+   +card('費用拖累',fmtPct(feeDrag),'區間累計（百分點）',feeDrag<0?'amber':'green')
+   +card('復原需上漲',recov===Infinity?'∞':'+'+(recov*100).toFixed(0)+'%','從正2最大回撤回本','amber');
+  const C=document.getElementById('callout');
+  if(recov===Infinity){
+    C.innerHTML='這個區間正2 幾乎<b>歸零</b>——理論上需要無限倍上漲才能回本。這就是單期槓桿在崩盤裡最殘酷的地方。';
+  }else if(netRet>=idxRet && netRet>0){
+    C.innerHTML='這段是<b>趨勢盤</b>,槓桿佔到便宜:指數 <b class="green">'+fmtPct(idxRet)+'</b>,正2 衝到 <b class="green">'+fmtPct(netRet)+'</b>、大幅超越指數。'
+      +'但天下沒有白吃的午餐——這段區間<b>最大回撤仍達 '+(ddNet*100).toFixed(0)+'%</b>;而且一旦趨勢反轉,兩倍槓桿會把帳面獲利<b>加倍吐回去</b>。把區間拉去 2000、2008、2022 看看,就知道另一面的下場。';
+  }else{
+    C.innerHTML='指數 <b class="'+(idxRet<0?'red':'green')+'">'+fmtPct(idxRet)+'</b>,'
+      +'很多人以為正2 頂多 <b>'+fmtPct(naive)+'</b>;但實際正2 是 <b class="'+(netRet<0?'red':'green')+'">'+fmtPct(netRet)+'</b>。'
+      +'真正把你拖垮的是<b>最大回撤 '+(ddNet*100).toFixed(0)+'%</b>'
+      +(recov>0?'(要回本得再漲 <b class="amber">+'+(recov*100).toFixed(0)+'%</b>)':'')
+      +',費用本身只影響 '+fmtPct(feeDrag)+'。';}
+}
+
+function updateDCA(r,dates,p){
+  CUR.absolute=true;CUR.isDD=(state.view==='dd');
+  const c=state.amt,buyFee=0.001425*(p.disc/10),n=r.idx.length;
+  let uI=0,uL=0,inv=0;const vI=[],vL=[],cum=[];
+  for(let i=0;i<n;i++){const eff=c*(1-buyFee);uI+=eff/r.idx[i];uL+=eff/Math.max(r.lev[i],1e-9);inv+=c;vI.push(uI*r.idx[i]);vL.push(uL*r.lev[i]);cum.push(inv);}
+  const finI=vI[n-1],finL=vL[n-1],retI=finI/inv-1,retL=finL/inv-1,ddL=mdd(vL);
+  if(CUR.isDD){setLegend([{n:'指數DCA 回撤',c:'#2563EB'},{n:'正2DCA 回撤',c:'#DC2626'}]);CUR.series=[
+    {name:'指數DCA 回撤',data:toDD(vI),color:'#2563EB',w:2,show:true,fill:true,fillc:'rgba(37,99,235,.10)'},
+    {name:'正2DCA 回撤',data:toDD(vL),color:'#DC2626',w:2.4,show:true,fill:true,fillc:'rgba(220,38,38,.12)'}];
+  }else{setLegend([{n:'累積投入',c:'#6B7280'},{n:'指數 定期定額 市值',c:'#2563EB'},{n:'正2 定期定額 市值',c:'#DC2626'}]);CUR.series=[
+    {name:'累積投入',data:cum,color:'#6B7280',w:1.4,dash:[4,4],show:true},
+    {name:'指數DCA 市值',data:vI,color:'#2563EB',w:2,show:true},
+    {name:'正2DCA 市值',data:vL,color:'#DC2626',w:2.6,show:true}];}
+  draw();
+  const R=document.getElementById('results');
+  R.innerHTML=card('總投入',fmtMoney(inv),n+' 個月 × '+fmtMoney(c)+'/月','')
+   +card('指數 定期定額 期末',fmtMoney(finI),fmtPct(retI),retI<0?'red':'green')
+   +card('正2 定期定額 期末',fmtMoney(finL),fmtPct(retL),retL<0?'red':'green')
+   +card('正2 DCA 最大回撤',(ddL*100).toFixed(0)+'%','市值 vs 波段高點',ddL<-0.4?'red':'amber')
+   +card('正2 −指數 差額',(finL>=finI?'+':'')+fmtMoney(finL-finI),(finL>=finI?'多賺 ':'少賺 ')+fmtPct(retL-retI),finL>=finI?'green':'red');
+  const C=document.getElementById('callout');
+  const win=retL>=retI;
+  C.innerHTML='<b>定期定額</b>:每月投入 '+fmtMoney(c)+'、'+n+' 個月共投入 <b>'+fmtMoney(inv)+'</b>。'
+    +'指數 DCA → <b class="'+(retI<0?'red':'green')+'">'+fmtMoney(finI)+'</b>('+fmtPct(retI)+');'
+    +'正2 DCA → <b class="'+(retL<0?'red':'green')+'">'+fmtMoney(finL)+'</b>('+fmtPct(retL)+')。'
+    +(win?'這段偏<b>多頭趨勢</b>,定期定額買正2 佔到便宜——但它中途<b>最大回撤 '+(ddL*100).toFixed(0)+'%</b>,大多數人抱不住、早就停損了。':'定期定額能<b>攤平成本</b>,卻攤不掉<b>波動耗損</b>:正2 定期定額期末反而落後指數、最大回撤 '+(ddL*100).toFixed(0)+'%。長期定期定額,該放在<b>市值型 ETF</b>做配置,不是拿來長抱單期槓桿。');
+}
+function card(l,n,s,cls){var tint=cls==='green'?'cg':cls==='red'?'cr':cls==='amber'?'ca':'';return '<div class="rcard '+tint+'"><div class="rl">'+l+'</div><div class="rn '+(cls||'')+'">'+n+'</div><div class="rs">'+s+'</div></div>';}
+
+/* interval slider wiring */
+const rStart=document.getElementById('rStart'),rEnd=document.getElementById('rEnd'),fill=document.getElementById('fill');
+rStart.max=N-1;rEnd.max=N-1;rStart.value=0;rEnd.value=N-1;
+function syncSlider(){
+  let a=+rStart.value,z=+rEnd.value;if(a>z-1){if(document.activeElement===rStart)a=z-1;else z=a+1;rStart.value=a;rEnd.value=z;}
+  state.a=a;state.z=z;
+  document.getElementById('fromLbl').textContent=DATES[a];
+  document.getElementById('toLbl').textContent=DATES[z];
+  const yrs=((z-a)/12).toFixed(1);
+  document.getElementById('lenLbl').textContent='共 '+(z-a)+' 個月 · 約 '+yrs+' 年';
+  fill.style.left=(a/(N-1)*100)+'%';fill.style.width=((z-a)/(N-1)*100)+'%';
+  update();
+}
+rStart.addEventListener('input',syncSlider);rEnd.addEventListener('input',syncSlider);
+
+const pc=document.getElementById('presets');
+PRESETS.forEach(([lbl,s,e])=>{const b=document.createElement('button');b.textContent=lbl;
+  const si=di(s),ei=di(e);
+  // clamp to available data
+  const sa=si>=0?si:(s<DATES[0]?0:-2), ea=ei>=0?ei:(e>DATES[N-1]?N-1:-2);
+  if(sa===-2||ea===-2||sa>=ea){b.disabled=true;b.title='資料尚未涵蓋此區間';}
+  b.onclick=()=>{rStart.value=sa;rEnd.value=ea;syncSlider();};
+  pc.appendChild(b);});
+
+function bindRange(id,key,fmt){const el=document.getElementById(id);el.addEventListener('input',()=>{state[key]=parseFloat(el.value);document.getElementById(id+'V').textContent=fmt(state[key]);update();});}
+bindRange('lev','lev',v=>v.toFixed(1)+'×');
+bindRange('amt','amt',v=>fmtMoney(v));
+bindRange('exp','exp',v=>v.toFixed(2)+'%');
+document.getElementById('amt').addEventListener('input',()=>document.getElementById('amtV').textContent=fmtMoney(state.amt));
+document.querySelectorAll('#scaleSeg button').forEach(b=>b.onclick=()=>{state.scale=b.dataset.s;document.querySelectorAll('#scaleSeg button').forEach(x=>x.classList.remove('active'));b.classList.add('active');update();});
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.remove('active'));b.classList.add('active');update();});
+document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{
+  state.mode=b.dataset.m;document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.getElementById('amtLbl').textContent=state.mode==='dca'?'每月投入金額':'單筆投入金額';update();});
+
+document.getElementById('covRange').textContent=DATES[0]+' ～ '+DATES[N-1];
+syncSlider();
+window.addEventListener('resize',resize);resize();
+</script>
+</body>
+</html>
