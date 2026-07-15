@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>人生時間線財務規劃模擬器｜徐承庚</title>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --navy:#1a365d; --navy-mid:#2b6cb0; --navy-lite:#bee3f8;
+      --gold:#b7860d; --gold-bg:#fefcbf;
+      --green:#276749; --green-mid:#48bb78; --green-lite:#f0fff4;
+      --red:#c53030; --red-lite:#fff5f5;
+      --orange:#c05621; --orange-lite:#fffaf0;
+      --blue-lite:#ebf8ff; --bg:#f0f4f8; --white:#fff;
+      --border:#e2e8f0; --gray:#718096;
+      --text:#1a202c; --text-med:#2d3748; --text-lite:#4a5568;
+    }
+    html { font-size:19px; }
+    body { font-family:'Microsoft JhengHei','PingFang TC',Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.8; }
+
+    .hero { background:linear-gradient(135deg,#1a365d,#2d6a9f); padding:48px 24px 42px; text-align:center; }
+    .hero h1 { font-size:1.85rem; font-weight:800; color:#fff; margin-bottom:12px; }
+    .hero p  { font-size:1.05rem; color:var(--navy-lite); max-width:680px; margin:0 auto; }
+
+    .wrap { max-width:980px; margin:0 auto; padding:28px 16px 0; }
+    .card { background:#fff; border-radius:14px; padding:32px 28px; margin-bottom:28px; box-shadow:0 2px 16px rgba(0,0,0,.07); }
+    .card-title { font-size:1.25rem; font-weight:700; color:var(--navy); margin-bottom:22px; padding-bottom:12px; border-bottom:3px solid var(--border); }
+
+    /* ── FORM ── */
+    .sub-title { font-size:1rem; font-weight:700; color:var(--navy-mid); margin:24px 0 14px; padding-left:10px; border-left:4px solid var(--navy-mid); }
+    .form-grid   { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .form-grid-5 { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+    .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+    @media(max-width:680px){
+      .form-grid,.form-grid-3{grid-template-columns:1fr;}
+      .form-grid-5{grid-template-columns:repeat(3,1fr);}
+    }
+    .fg { display:flex; flex-direction:column; }
+    .fg.full { grid-column:1/-1; }
+    label { font-size:.95rem; font-weight:600; color:var(--text-med); margin-bottom:6px; line-height:1.4; }
+    label .hint { font-weight:400; font-size:.82rem; color:var(--gray); display:block; margin-top:2px; }
+    input[type="text"],input[type="number"],select {
+      font-size:1.05rem; color:var(--text); background:#f7fafc;
+      border:2px solid #cbd5e0; border-radius:8px; padding:10px 13px;
+      width:100%; font-family:inherit; transition:border-color .2s,background .2s;
+    }
+    input:focus,select:focus { outline:none; border-color:var(--navy-mid); background:var(--blue-lite); }
+
+    /* stock mode toggle */
+    .stock-mode-opt { display:flex; align-items:flex-start; gap:12px; background:#fff; border:2px solid var(--border); border-radius:12px; padding:14px 18px; cursor:pointer; flex:1; min-width:240px; transition:border-color .2s, background .2s; }
+    .stock-mode-opt:has(input:checked) { border-color:var(--orange); background:var(--orange-lite); }
+    .stock-mode-opt input[type="radio"] { display:none; }
+    .smo-icon { font-size:1.5rem; flex-shrink:0; margin-top:2px; }
+    .smo-body { display:flex; flex-direction:column; gap:4px; }
+    .smo-body strong { font-size:1rem; color:var(--text); }
+    .smo-desc { font-size:.82rem; color:var(--gray); line-height:1.5; }
+    .stock-mode-opt:has(input:checked) .smo-body strong { color:var(--orange); }
+
+    .assume-box { background:#fffff0; border:2px solid #f6e05e; border-radius:10px; padding:16px 20px; font-size:.88rem; color:#744210; margin-top:20px; line-height:2; }
+    .assume-box strong { display:block; margin-bottom:4px; font-size:.95rem; }
+    .rate-note { background:var(--blue-lite); border:2px solid #90cdf4; border-radius:10px; padding:12px 16px; font-size:.88rem; color:var(--navy); margin-top:12px; }
+
+    .calc-btn { display:block; width:100%; margin-top:24px; padding:17px; font-size:1.25rem; font-weight:700; color:#fff; background:linear-gradient(135deg,#1a365d,#2b6cb0); border:none; border-radius:10px; cursor:pointer; letter-spacing:.03em; transition:opacity .2s,transform .15s; font-family:inherit; }
+    .calc-btn:hover { opacity:.9; transform:translateY(-2px); }
+
+    /* ── RESULTS ── */
+    #results { display:none; }
+    .person-banner { background:linear-gradient(135deg,#1a365d,#2d6a9f); border-radius:14px; padding:26px 28px; margin-bottom:28px; color:#fff; }
+    .person-banner .greeting { font-size:.95rem; color:var(--navy-lite); }
+    .person-banner .pname    { font-size:1.7rem; font-weight:800; color:#fff; margin:4px 0 10px; }
+    .person-banner .psummary { font-size:1rem; color:#e2e8f0; line-height:1.7; }
+
+    /* ════ GANTT ════ */
+    .gantt-axis-row { display:flex; margin-bottom:8px; }
+    .gantt-lbl-w { width:120px; flex-shrink:0; }
+    .gantt-axis  { flex:1; position:relative; height:46px; border-bottom:2px solid #a0aec0; }
+    .g-tick { position:absolute; bottom:0; display:flex; flex-direction:column; align-items:center; transform:translateX(-50%); }
+    .g-tick-ln  { width:1px; height:7px; background:#a0aec0; }
+    .g-tick-lb  { font-size:.72rem; color:var(--gray); margin-top:2px; white-space:nowrap; }
+    .g-tick.maj .g-tick-ln  { height:11px; background:#4a5568; }
+    .g-tick.maj .g-tick-lb  { color:var(--text-med); font-size:.77rem; font-weight:700; }
+    .g-tick.ret .g-tick-ln  { height:14px; background:var(--gold); width:3px; }
+    .g-tick.ret .g-tick-lb  { color:var(--gold); font-size:.77rem; font-weight:800; background:var(--gold-bg); padding:2px 6px; border-radius:8px; position:absolute; bottom:14px; left:50%; transform:translateX(-50%); }
+    .g-tick.dth .g-tick-ln  { height:14px; background:var(--red); width:3px; }
+    .g-tick.dth .g-tick-lb  { color:var(--red); font-size:.77rem; font-weight:800; background:#fff5f5; padding:2px 6px; border-radius:8px; position:absolute; bottom:14px; left:50%; transform:translateX(-50%); }
+
+    .gantt-row { display:flex; align-items:flex-start; margin-bottom:30px; }
+    .gantt-row-lbl { width:120px; flex-shrink:0; padding-right:10px; text-align:right; font-size:.85rem; font-weight:700; color:var(--text-med); padding-top:16px; line-height:1.4; }
+    .gantt-bar-area { flex:1; }
+    .gantt-bars  { position:relative; height:52px; border-radius:8px; }
+    .gantt-bars-inner { position:absolute; top:0; left:0; right:0; height:52px; border-radius:8px; overflow:hidden; }
+    .gantt-overlay    { position:absolute; top:0; left:0; right:0; height:52px; pointer-events:none; }
+    .g-acc,.g-dist { position:absolute; top:0; height:100%; }
+    .g-acc  { border-radius:8px 0 0 8px; }
+    .g-dist { border-radius:0 8px 8px 0; }
+    .g-acc.bank   { background:linear-gradient(90deg,#63b3ed,#2b6cb0); }
+    .g-dist.bank  { background:#bee3f8; }
+    .g-acc.stocks { background:linear-gradient(90deg,#f6ad55,#c05621); }
+    .g-dist.stocks{ background:#feebc8; }
+    .g-acc.insure { background:linear-gradient(90deg,#68d391,#276749); }
+    .g-dist.insure{ background:#c6f6d5; }
+    .g-fade      { position:absolute; top:0; height:52px; background:rgba(255,255,255,.68); border-left:3px dashed var(--red); pointer-events:none; }
+    .g-fade-dist { position:absolute; top:0; height:52px; background:rgba(180,180,180,.45); pointer-events:none; }
+    .g-vline      { position:absolute; top:0; bottom:0; width:3px; }
+    .g-vline.ret  { background:var(--gold); }
+    .g-vline.dth  { border-left:3px dashed var(--red); background:transparent; }
+    .gantt-annots { position:relative; height:30px; margin-top:5px; }
+    .g-an { position:absolute; font-size:.8rem; font-weight:700; line-height:1.3; white-space:nowrap; top:0; }
+    .g-an.acc  { text-align:right; padding-right:6px; color:var(--navy); }
+    .g-an.dist { text-align:center; }
+    .g-an.dist.bank   { color:#1a365d; }
+    .g-an.dist.stocks { color:#7b341e; }
+    .g-an.dist.insure { color:#22543d; }
+
+    .gantt-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:.85rem; color:var(--text-lite); }
+    .gl-sw { display:inline-block; width:14px; height:12px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+
+    /* ── SCENARIO ── */
+    .badge { display:inline-block; padding:5px 18px; border-radius:20px; font-size:.9rem; font-weight:700; margin-bottom:16px; }
+    .badge-green { background:#c6f6d5; color:#22543d; }
+    .badge-red   { background:#fed7d7; color:#742a2a; }
+    .section-intro { font-size:.95rem; color:var(--text-lite); margin-bottom:22px; }
+
+    .opt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:4px; }
+    @media(max-width:680px){ .opt-grid{grid-template-columns:1fr;} }
+    .opt-card { border-radius:12px; padding:20px 14px; text-align:center; }
+    .opt-card.bank   { background:var(--blue-lite);   border:2px solid #90cdf4; }
+    .opt-card.stocks { background:var(--orange-lite); border:2px solid #fbd38d; }
+    .opt-card.insure { background:var(--green-lite);  border:2px solid #9ae6b4; }
+    .opt-icon { font-size:2rem; margin-bottom:6px; }
+    .opt-name { font-size:1.05rem; font-weight:700; margin-bottom:12px; }
+    .opt-name.bank   { color:var(--navy-mid); }
+    .opt-name.stocks { color:var(--orange); }
+    .opt-name.insure { color:var(--green); }
+    .rl { font-size:.82rem; color:var(--gray); margin-bottom:2px; }
+    .rv { font-size:1.3rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .rv.hi     { color:var(--green); font-size:1.45rem; }
+    .rv.danger { color:var(--red); }
+    .rv.bank   { color:var(--navy-mid); }
+    .rv.stocks { color:var(--orange); }
+    .rv.insure { color:var(--green); }
+    .opt-note      { font-size:.78rem; color:var(--gray); margin-top:6px; }
+    .opt-note.good { color:var(--green); }
+
+    hr.div { border:none; border-top:2px solid var(--border); margin:22px 0; }
+    .chart-title { font-size:1rem; font-weight:600; color:var(--text-med); margin-bottom:14px; }
+    .bar-row   { display:flex; align-items:center; margin-bottom:14px; }
+    .bar-lbl   { width:130px; font-size:.9rem; font-weight:600; color:var(--text-med); flex-shrink:0; }
+    .bar-track { flex:1; background:var(--border); border-radius:6px; height:30px; overflow:hidden; }
+    .bar-fill  { height:100%; border-radius:6px; transition:width .9s cubic-bezier(.4,0,.2,1); }
+    .bar-fill.bank   { background:linear-gradient(90deg,#63b3ed,#4299e1); }
+    .bar-fill.stocks { background:linear-gradient(90deg,#f6ad55,#ed8936); }
+    .bar-fill.insure { background:linear-gradient(90deg,#68d391,#48bb78); }
+    .bar-amt { width:150px; text-align:right; font-size:.93rem; font-weight:700; color:var(--text-med); flex-shrink:0; padding-left:10px; }
+
+    .sum-box { background:var(--navy); color:#fff; border-radius:12px; padding:22px 26px; margin-top:18px; }
+    .sum-box h3 { color:var(--navy-lite); font-size:1.05rem; margin-bottom:10px; }
+    .sum-box p  { color:#e2e8f0; font-size:.95rem; margin-bottom:8px; line-height:1.75; }
+    .sum-box p strong { color:#fff; }
+
+    .slider-wrap { background:#f7fafc; border:2px solid var(--border); border-radius:12px; padding:20px 20px; margin-bottom:22px; }
+    .slider-lbl  { font-size:1rem; font-weight:600; color:var(--text-med); margin-bottom:10px; }
+    input[type="range"] { -webkit-appearance:none; width:100%; height:10px; border-radius:5px; background:#cbd5e0; outline:none; cursor:pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:var(--navy-mid); border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.25); cursor:pointer; }
+    input[type="range"]::-moz-range-thumb { width:28px; height:28px; border-radius:50%; background:var(--navy-mid); border:3px solid #fff; cursor:pointer; }
+    .slider-val  { text-align:center; font-size:1.2rem; font-weight:700; color:var(--navy); margin-top:10px; }
+
+    /* ── DETAIL TABLE ── */
+    .detail-toggle { display:inline-block; margin-top:16px; padding:10px 20px; font-size:.95rem; font-weight:600; color:var(--navy-mid); background:var(--blue-lite); border:2px solid #90cdf4; border-radius:8px; cursor:pointer; transition:background .2s; font-family:inherit; }
+    .detail-toggle:hover { background:#bee3f8; }
+    /* detail-fs-btn 樣式現在直接寫在 HTML inline style，此處保留 hover */
+    #detail-fs-btn:hover { background:#2c7a7b !important; }
+
+    /* ── 一般模式 ── */
+    #ins-detail-wrap { display:none; margin-top:16px; overflow-x:auto; border:1px solid var(--border); border-radius:8px; }
+    /* ── 全螢幕模式 ── */
+    #ins-detail-wrap.fs-mode {
+      position:fixed; inset:0;
+      width:100vw; height:100vh;
+      overflow:auto;
+      background:#fff;
+      z-index:9000;
+      padding:16px;
+      box-sizing:border-box;
+      border-radius:0; border:none; margin:0;
+    }
+    .fs-header {
+      display:none; align-items:center; gap:12px;
+      margin-bottom:12px; position:sticky; top:0; z-index:10;
+      background:#fff; padding-bottom:8px; border-bottom:2px solid var(--border);
+    }
+    #ins-detail-wrap.fs-mode .fs-header { display:flex; }
+
+    /* 表格字體稍緊湊，left-sticky 前兩欄 */
+    .detail-tbl { width:100%; border-collapse:collapse; font-size:.78rem; }
+    .detail-tbl th { background:var(--navy); color:#fff; padding:6px 8px; text-align:center; white-space:nowrap; position:sticky; top:0; z-index:3; }
+    .detail-tbl td { padding:5px 8px; text-align:right; border-bottom:1px solid var(--border); white-space:nowrap; }
+    .detail-tbl td:first-child, .detail-tbl td:nth-child(2) { text-align:center; }
+    /* Sticky 第1欄（年度）與第2欄（年齡） */
+    .detail-tbl th:nth-child(1), .detail-tbl td:nth-child(1) {
+      position:sticky; left:0; z-index:2;
+      background:var(--navy);
+      box-shadow:2px 0 4px rgba(0,0,0,.12);
+    }
+    .detail-tbl td:nth-child(1) { background:#f7fafc; font-weight:700; color:var(--navy); }
+    .detail-tbl th:nth-child(2), .detail-tbl td:nth-child(2) {
+      position:sticky; left:42px; z-index:2;
+      box-shadow:2px 0 4px rgba(0,0,0,.06);
+    }
+    .detail-tbl td:nth-child(2) { background:#f7fafc; }
+    .detail-tbl tr:nth-child(even) td { background:#f7fafc; }
+    .detail-tbl tr:nth-child(even) td:nth-child(1),
+    .detail-tbl tr:nth-child(even) td:nth-child(2) { background:#edf2f7; }
+    .detail-tbl tr:hover td { background:#ebf8ff !important; }
+    .detail-tbl .neg { color:var(--red); }
+    .detail-tbl .lo  { color:var(--orange); }
+
+    .disclaimer { font-size:.83rem; color:var(--gray); border-top:2px solid var(--border); padding-top:14px; margin-top:8px; }
+    footer { background:#1a202c; color:#a0aec0; text-align:center; padding:28px 16px; font-size:1rem; margin-top:40px; }
+    footer .cr   { color:#e2e8f0; font-weight:600; }
+    footer .note { font-size:.85rem; color:#718096; margin-top:6px; }
+
+    @media(max-width:480px){
+      html{font-size:17px;}
+      .hero h1{font-size:1.4rem;}
+      .card{padding:20px 14px;}
+      .gantt-row-lbl{width:86px;font-size:.78rem;}
+      .gantt-lbl-w{width:86px;}
+    }
+
+    /* ══════════════════════════════════════════════════
+       WORDPRESS 主題衝突保護
+       所有顏色以 #fpsim 為父層加 !important 強制覆蓋
+    ══════════════════════════════════════════════════ */
+    #fpsim {
+      font-family:'Microsoft JhengHei','PingFang TC',Arial,sans-serif !important;
+      color:#1a202c !important;
+      background:#f0f4f8 !important;
+    }
+    /* 讓通用元素繼承父層顏色，不讓 WordPress 主題覆蓋 */
+    #fpsim p, #fpsim span, #fpsim li, #fpsim td,
+    #fpsim strong, #fpsim em, #fpsim b, #fpsim small {
+      color:inherit !important;
+      font-family:inherit !important;
+    }
+    #fpsim h1,#fpsim h2,#fpsim h3,#fpsim h4,#fpsim h5,#fpsim h6 {
+      color:inherit !important;
+      font-family:inherit !important;
+      font-weight:inherit !important;
+      line-height:inherit !important;
+    }
+    #fpsim a { color:inherit !important; text-decoration:none !important; }
+
+    /* 各元件明確顏色 */
+    #fpsim .hero { color:#fff !important; }
+    #fpsim .hero h1 { color:#fff !important; font-size:1.85rem !important; font-weight:800 !important; }
+    #fpsim .hero p  { color:#bee3f8 !important; }
+    #fpsim .card-title { color:#1a365d !important; font-size:1.25rem !important; font-weight:700 !important; }
+    #fpsim .sub-title  { color:#2b6cb0 !important; }
+    #fpsim label { color:#2d3748 !important; font-weight:600 !important; }
+    #fpsim label .hint { color:#718096 !important; }
+    #fpsim input[type="text"],#fpsim input[type="number"],#fpsim select { color:#1a202c !important; background:#f7fafc !important; }
+    #fpsim .calc-btn { color:#fff !important; }
+    #fpsim .assume-box { color:#744210 !important; }
+    #fpsim .rate-note  { color:#1a365d !important; }
+    #fpsim .smo-body strong { color:#1a202c !important; }
+    #fpsim .smo-desc { color:#718096 !important; }
+    #fpsim .stock-mode-opt:has(input:checked) .smo-body strong { color:#c05621 !important; }
+    #fpsim .person-banner { color:#fff !important; }
+    #fpsim .person-banner .greeting  { color:#bee3f8 !important; }
+    #fpsim .person-banner .pname     { color:#fff !important; }
+    #fpsim .person-banner .psummary  { color:#e2e8f0 !important; }
+    #fpsim .badge-green { color:#22543d !important; }
+    #fpsim .badge-red   { color:#742a2a !important; }
+    #fpsim .section-intro { color:#4a5568 !important; }
+    #fpsim .opt-name.bank   { color:#2b6cb0 !important; }
+    #fpsim .opt-name.stocks { color:#c05621 !important; }
+    #fpsim .opt-name.insure { color:#276749 !important; }
+    #fpsim .rl { color:#718096 !important; }
+    #fpsim .rv { color:#1a202c !important; }
+    #fpsim .rv.hi     { color:#276749 !important; }
+    #fpsim .rv.danger { color:#c53030 !important; }
+    #fpsim .rv.bank   { color:#2b6cb0 !important; }
+    #fpsim .rv.stocks { color:#c05621 !important; }
+    #fpsim .rv.insure { color:#276749 !important; }
+    #fpsim .opt-note      { color:#718096 !important; }
+    #fpsim .opt-note.good { color:#276749 !important; }
+    #fpsim .sum-box   { color:#e2e8f0 !important; }
+    #fpsim .sum-box h3 { color:#bee3f8 !important; }
+    #fpsim .sum-box p  { color:#e2e8f0 !important; }
+    #fpsim .sum-box p strong { color:#fff !important; }
+    #fpsim .chart-title { color:#2d3748 !important; }
+    #fpsim .bar-lbl     { color:#2d3748 !important; }
+    #fpsim .bar-amt     { color:#2d3748 !important; }
+    #fpsim .slider-lbl  { color:#2d3748 !important; }
+    #fpsim .slider-val  { color:#1a365d !important; }
+    #fpsim #r-death-lbl { color:#c53030 !important; }
+    #fpsim .detail-tbl th  { color:#fff !important; background:#1a365d !important; }
+    #fpsim .detail-tbl td  { color:#1a202c !important; }
+    #fpsim .detail-tbl td:nth-child(1) { background:#e2e8f0 !important; color:#1a365d !important; }
+    #fpsim .detail-tbl td:nth-child(2) { background:#e2e8f0 !important; }
+    #fpsim .detail-tbl tr:nth-child(even) td:nth-child(1),
+    #fpsim .detail-tbl tr:nth-child(even) td:nth-child(2) { background:#cbd5e0 !important; }
+    #fpsim .detail-tbl .neg { color:#c53030 !important; }
+    #fpsim .detail-tbl .lo  { color:#c05621 !important; }
+    #fpsim .detail-toggle   { color:#2b6cb0 !important; }
+    #fpsim .disclaimer      { color:#718096 !important; }
+    #fpsim .gantt-row-lbl   { color:#2d3748 !important; }
+    #fpsim .g-an.acc         { color:#1a365d !important; }
+    #fpsim .g-an.dist.bank   { color:#1a365d !important; }
+    #fpsim .g-an.dist.stocks { color:#7b341e !important; }
+    #fpsim .g-an.dist.insure { color:#22543d !important; }
+    #fpsim .gantt-legend     { color:#4a5568 !important; }
+    #fpsim .g-tick-lb            { color:#718096 !important; }
+    #fpsim .g-tick.maj .g-tick-lb { color:#2d3748 !important; }
+    #fpsim .g-tick.ret .g-tick-lb { color:#b7860d !important; }
+    #fpsim .g-tick.dth .g-tick-lb { color:#c53030 !important; }
+    #fpsim footer      { color:#a0aec0 !important; background:#1a202c !important; }
+    #fpsim footer .cr  { color:#e2e8f0 !important; }
+    #fpsim footer .note { color:#718096 !important; }
+
+    /* ══════════════════════════════════════════════════
+       手機版優化（強化版）
+    ══════════════════════════════════════════════════ */
+    @media(max-width:680px){
+      /* 橫向條狀圖：縮短固定欄寬 */
+      .bar-lbl { width:90px !important; font-size:.82rem !important; }
+      .bar-amt { width:100px !important; font-size:.82rem !important; }
+      /* 甘特標注文字 */
+      .g-an { font-size:.73rem !important; }
+      .gantt-annots { height:38px !important; }
+      /* 股票模式選項 */
+      .stock-mode-opt { min-width:100% !important; }
+    }
+    @media(max-width:480px){
+      html { font-size:16px !important; }
+      .hero { padding:28px 14px 24px !important; }
+      .hero h1 { font-size:1.25rem !important; }
+      .hero p  { font-size:.9rem !important; }
+      .card { padding:16px 12px !important; }
+      /* 甘特：縮小標籤欄至 65px */
+      .gantt-row-lbl { width:65px !important; font-size:.72rem !important; padding-top:14px !important; }
+      .gantt-lbl-w   { width:65px !important; }
+      .gantt-bars { height:42px !important; }
+      .gantt-bars-inner, .gantt-overlay { height:42px !important; }
+      .g-acc,.g-dist,.g-fade,.g-fade-dist { height:42px !important; }
+      .g-an { font-size:.68rem !important; }
+      .gantt-annots { height:36px !important; overflow-x:auto !important; }
+      /* 條狀圖 */
+      .bar-row { flex-wrap:wrap !important; gap:4px !important; }
+      .bar-lbl { width:100% !important; font-size:.88rem !important; }
+      .bar-track { order:2; }
+      .bar-amt { width:auto !important; order:3; font-size:.88rem !important; }
+      /* 前置費用 5 格 → 2 欄 */
+      .form-grid-5 { grid-template-columns:repeat(2,1fr) !important; }
+      /* 卡片 */
+      .opt-card { padding:14px 10px !important; }
+      .rv { font-size:1.1rem !important; }
+      .rv.hi { font-size:1.2rem !important; }
+      /* 滑桿觸控更容易 */
+      input[type="range"]::-webkit-slider-thumb { width:34px !important; height:34px !important; }
+    }
+  </style>
+</head>
+<body>
+<div id="pw-gate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#1a365d,#2d6a9f);display:flex;align-items:center;justify-content:center;">
+<div style="background:#fff;border-radius:16px;padding:40px 36px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+<h2 style="margin:0 0 8px;color:#1a365d;font-size:1.4rem;">🔒 請輸入密碼</h2>
+<p style="color:#718096;font-size:.9rem;margin-bottom:20px;">此模擬器僅限學員使用</p>
+<input type="password" id="pw-input" placeholder="請輸入密碼" autofocus
+  style="width:100%;padding:12px 16px;border:2px solid #cbd5e0;border-radius:10px;font-size:1.05rem;outline:none;margin-bottom:12px;text-align:center;"
+  onkeydown="if(event.key==='Enter')checkPw()">
+<button onclick="checkPw()" style="width:100%;padding:12px;background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;">解鎖</button>
+<div id="pw-err" style="color:#c53030;margin-top:10px;font-size:.9rem;"></div>
+</div>
+</div>
+<script>
+if(sessionStorage.getItem('pw-ok')==='1'){document.getElementById('pw-gate').style.display='none';}
+function checkPw(){var h='0576766efa0644463dbdae6a0e336a14fc3a0360394420581543e4c4eab559de',i=document.getElementById('pw-input'),v=i.value;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(b){var a=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(a===h){document.getElementById('pw-gate').style.display='none';sessionStorage.setItem('pw-ok','1')}else{document.getElementById('pw-err').textContent='密碼錯誤，請重試';i.value='';i.focus()}})}
+</script>
+<div id="fpsim">
+
+<div class="hero">
+  <h1>🌟 人生時間線財務規劃模擬器</h1>
+  <p>透過銀行定存、股票投資、投資型保單三種工具的精確比較，<br>幫助您更清楚地規劃退休生活與家人保障。</p>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ FORM ══ -->
+  <div class="card">
+    <div class="card-title">📝 請填寫您的資料</div>
+
+    <!-- 基本資料 -->
+    <div class="sub-title">👤 基本資料</div>
+    <div class="form-grid">
+      <div class="fg">
+        <label for="i-name">您的姓名</label>
+        <input type="text" id="i-name" placeholder="請輸入您的姓名"/>
+      </div>
+      <div class="fg">
+        <label for="i-sex">性別
+          <span class="hint">影響保險危險保費費率</span>
+        </label>
+        <select id="i-sex" onchange="onSexChange()">
+          <option value="M">男</option>
+          <option value="F">女</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label for="i-age">當下年紀 <span class="hint">歲</span></label>
+        <input type="number" id="i-age" min="18" max="79" placeholder="例：35"/>
+      </div>
+      <div class="fg">
+        <label for="i-ret">預計退休年齡 <span class="hint">歲</span></label>
+        <input type="number" id="i-ret" min="30" max="90" placeholder="例：60"/>
+      </div>
+      <div class="fg">
+        <label for="i-life">預計壽命 <span class="hint">歲</span></label>
+        <input type="number" id="i-life" min="50" max="120" placeholder="例：85"/>
+      </div>
+      <div class="fg full">
+        <label for="i-pmt">每年可規劃投資金額
+          <span class="hint">扣掉食衣住行育樂＋保險等所有開銷後，每年剩餘可投入金額（元）</span>
+        </label>
+        <input type="number" id="i-pmt" min="1" placeholder="例：120000"/>
+      </div>
+      <div class="fg">
+        <label for="i-cage">小孩當下幾歲 <span class="hint">歲，無小孩填 0</span></label>
+        <input type="number" id="i-cage" min="0" max="30" placeholder="例：5" value="0"/>
+      </div>
+      <div class="fg">
+        <label for="i-ccost">估計孩子扶養長大總花費 <span class="hint">元，無小孩填 0</span></label>
+        <input type="number" id="i-ccost" min="0" placeholder="例：3000000" value="0"/>
+      </div>
+    </div>
+
+    <!-- 投資設定 -->
+    <div class="sub-title">📈 投資報酬率設定</div>
+    <div class="form-grid-3">
+      <div class="fg">
+        <label for="i-rate">同樣投資標的年化報酬率
+          <span class="hint">適用於股票與保單投資標的，銀行定存固定 1%（%）</span>
+        </label>
+        <input type="number" id="i-rate" min="0" max="30" step="0.1" value="8" placeholder="例：8"/>
+      </div>
+      <div class="fg" style="grid-column:span 2;">
+        <div class="rate-note" style="margin-top:26px;">
+          💡 此報酬率同時套用於「股票投資」與「投資型保單」的投資標的，
+          保單另再扣除前置費用與每年度保險成本，呈現真實的淨累積效果。
+        </div>
+      </div>
+    </div>
+
+    <!-- 股票策略選項 -->
+    <div class="sub-title">📊 股票投資策略</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:4px;">
+      <label class="stock-mode-opt" id="smo-compound">
+        <input type="radio" name="stock-mode" value="compound" checked onchange="onStockModeChange()"/>
+        <span class="smo-icon">🔄</span>
+        <span class="smo-body">
+          <strong>累積複利</strong>
+          <span class="smo-desc">每年報酬滾入再投資，退休時一次擁有最大資產，可選擇全數提領或繼續以股利方式生活</span>
+        </span>
+      </label>
+      <label class="stock-mode-opt" id="smo-dividend">
+        <input type="radio" name="stock-mode" value="dividend" onchange="onStockModeChange()"/>
+        <span class="smo-icon">💸</span>
+        <span class="smo-body">
+          <strong>領現金股利</strong>
+          <span class="smo-desc">每年配息領出，不再滾入，本金維持線性成長（每月固定投入），退休後繼續年年領股利</span>
+        </span>
+      </label>
+    </div>
+
+    <!-- 投資型保單設定 -->
+    <div class="sub-title">🛡️ 投資型保單設定</div>
+    <div class="form-grid">
+      <div class="fg">
+        <label for="i-face">投資型壽險保額
+          <span class="hint">保單的身故保障額度（元）</span>
+        </label>
+        <input type="number" id="i-face" min="0" placeholder="例：5000000"/>
+      </div>
+      <div class="fg">
+        <label for="i-payyrs">繳費年期
+          <span class="hint">保費僅繳至此年數，之後帳戶繼續複利成長但不再投入新保費</span>
+        </label>
+        <input type="number" id="i-payyrs" min="1" max="40" value="20" placeholder="例：20"/>
+      </div>
+      <div class="fg full">
+        <label for="i-co">保險公司 / 費率表
+          <span class="hint">切換後前置費用將自動更新為該保單預設值，亦可手動調整；費率依上方「性別」選擇自動切換</span>
+        </label>
+        <select id="i-co" onchange="onCoChange()">
+          <option value="A">甲：安聯10來旺（附表二，前置費 60/30/20/20/20%，第6–10年含加值給付金）</option>
+          <option value="B">乙：富邦吉祥年年（附表五，前置費 60/35/25/15/15%）</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <label style="display:block;margin-bottom:10px;">前置費用（保費費用比率，第 6 年起通常為 0%；切換公司時自動帶入，可手動修改）</label>
+      <div class="form-grid-5">
+        <div class="fg">
+          <label for="i-fl1" style="font-size:.85rem;">第 1 年 <span class="hint">%</span></label>
+          <input type="number" id="i-fl1" min="0" max="100" step="0.1" value="60"/>
+        </div>
+        <div class="fg">
+          <label for="i-fl2" style="font-size:.85rem;">第 2 年 <span class="hint">%</span></label>
+          <input type="number" id="i-fl2" min="0" max="100" step="0.1" value="30"/>
+        </div>
+        <div class="fg">
+          <label for="i-fl3" style="font-size:.85rem;">第 3 年 <span class="hint">%</span></label>
+          <input type="number" id="i-fl3" min="0" max="100" step="0.1" value="20"/>
+        </div>
+        <div class="fg">
+          <label for="i-fl4" style="font-size:.85rem;">第 4 年 <span class="hint">%</span></label>
+          <input type="number" id="i-fl4" min="0" max="100" step="0.1" value="20"/>
+        </div>
+        <div class="fg">
+          <label for="i-fl5" style="font-size:.85rem;">第 5 年 <span class="hint">%</span></label>
+          <input type="number" id="i-fl5" min="0" max="100" step="0.1" value="20"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="assume-box">
+      <strong>📋 試算說明</strong>
+      ✦ <b>銀行定存</b>：年利率固定 1%，複利累積；退休後只領利息、本金不動。<br>
+      ✦ <b>股票投資</b>：以設定之年化報酬率複利累積；退休後每年領取「帳戶價值 × 報酬率」作為股利收入，本金保留。<br>
+      ✦ <b>投資型保單</b>：底層以同一年化報酬率成長，但每年先扣「前置費用」（前 5 年）與「保險成本」（危險保額×月費率×12），剩餘才是當年實際投入。身故理賠取「帳戶價值」與「壽險保額」之較高者。<br>
+      ✦ <b>危險保費率</b>：費率直接取自保險條款（甲：安聯10來旺附表二；乙：富邦吉祥年年附表五），採月度模擬，甲公司含加值給付金（安聯10來旺附表六）。
+    </div>
+    <button class="calc-btn" onclick="doCalc()">🔍 開始計算我的人生時間線</button>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div id="results">
+    <div class="person-banner">
+      <div class="greeting">您好，</div>
+      <div class="pname" id="r-name">—</div>
+      <div class="psummary" id="r-summary">—</div>
+    </div>
+
+    <!-- 情境一 -->
+    <div class="card">
+      <span class="badge badge-green">✅ 情境一：平安退休，沒有生病或意外</span>
+      <p class="section-intro">假設您平安順利累積到退休年齡，三種工具的退休資產與每年可領金額：</p>
+
+      <div id="r-gantt-s1"></div>
+      <div class="gantt-legend" style="margin-bottom:22px;">
+        <span><span class="gl-sw" style="background:#2b6cb0"></span>深色＝工作累積期</span>
+        <span><span class="gl-sw" style="background:#bee3f8;border:1px solid #90cdf4"></span>淺色＝退休領錢期</span>
+        <span><span class="gl-sw" style="background:#b7860d"></span>金線＝退休年齡</span>
+      </div>
+      <hr class="div"/>
+
+      <div class="opt-grid" id="r-s1-grid"></div>
+
+      <!-- Insurance detail toggle -->
+      <div>
+        <button class="detail-toggle" onclick="toggleDetail()">📋 查看投資型保單年度詳細計算 ▼</button>
+        <div id="ins-detail-wrap">
+          <!-- 工具列：全螢幕按鈕 + 說明（表格展開後即可見） -->
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);background:#f7fafc;">
+            <button id="detail-fs-btn" onclick="toggleDetailFS()"
+              style="padding:7px 14px;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.88rem;font-weight:600;font-family:inherit;flex-shrink:0;">
+              ⛶ 全螢幕展開
+            </button>
+            <span style="font-size:.76rem;color:var(--gray);">
+              ⚠️ 費率為範例值，實際以保單條款為準。左右滑動可查看全部欄位；「年度」欄已固定於左側。
+            </span>
+          </div>
+          <!-- 全螢幕模式才顯示的頂部標題列 -->
+          <div class="fs-header">
+            <button onclick="toggleDetailFS()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.9rem;font-family:inherit;">✕ 退出全螢幕</button>
+            <span style="font-size:1.05rem;font-weight:700;color:var(--navy);">📋 年度詳細計算 — 投資型保單</span>
+            <span style="font-size:.8rem;color:var(--gray);margin-left:auto;">按 ESC 鍵可退出全螢幕</span>
+          </div>
+          <div id="ins-detail-table"></div>
+        </div>
+      </div>
+
+      <hr class="div"/>
+      <div class="chart-title">退休時累積資產比較</div>
+      <div id="r-s1-chart"></div>
+      <div class="sum-box" id="r-s1-sum"></div>
+    </div>
+
+    <!-- 情境二 -->
+    <div class="card">
+      <span class="badge badge-red">⚠️ 情境二：退休前萬一生病、意外導致身故</span>
+      <p class="section-intro">拖動滑桿選擇「萬一在幾歲身故」，甘特圖與試算即時同步更新。
+        保單身故理賠＝取「帳戶價值」與「壽險保額」之較高者。</p>
+
+      <div class="slider-wrap">
+        <div class="slider-lbl">🎚️ 請選擇萬一身故的年齡</div>
+        <input type="range" id="sl-death" min="20" max="59" value="30" oninput="updateS2()"/>
+        <div class="slider-val" id="r-death-lbl">—</div>
+      </div>
+
+      <div id="r-gantt-s2"></div>
+      <div class="gantt-legend" style="margin-bottom:22px;">
+        <span><span class="gl-sw" style="background:#2b6cb0"></span>深色＝工作累積期</span>
+        <span><span class="gl-sw" style="background:#bee3f8;border:1px solid #90cdf4"></span>淺色＝退休領錢期</span>
+        <span><span class="gl-sw" style="background:#b7860d"></span>金線＝退休年齡</span>
+        <span><span class="gl-sw" style="background:transparent;border:2px dashed var(--red)"></span>紅線＝身故年齡</span>
+      </div>
+      <hr class="div"/>
+
+      <div class="opt-grid" id="r-s2-grid"></div>
+      <hr class="div"/>
+      <div class="chart-title">孩子實得遺產比較（扣除扶養費後）</div>
+      <div id="r-s2-chart"></div>
+      <div class="sum-box" id="r-s2-sum"></div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ 本工具試算結果僅供教育與參考，不構成任何投資或保險建議。
+      實際數字依個人狀況、各保險公司條款與市場波動而有所不同，請洽詢合格專業顧問後再做決策。
+    </div><br/>
+  </div>
+</div>
+
+<footer>
+  <div class="cr">Copyright © 徐承庚｜NLP豐盛你的人生. All Rights Reserved</div>
+  <div class="note">本工具之試算結果僅供參考，請諮詢專業顧問後再做財務決策。</div>
+</footer>
+
+</div><!-- /#fpsim -->
+
+<!-- ════════════════════════════════════════════ SCRIPT ════ -->
+<script>
+/* ═══════════════════════════════════════════════════════
+   危險保費費率表（元／每萬淨危險保額．每月）
+   以下為範例費率，實際依各保司條款為準
+═══════════════════════════════════════════════════════ */
+/* 費率來源：安聯人壽10來旺保險條款【附表二】每月保險成本費率表
+   單位：元／每萬淨危險保額（每月，男性）
+   公式：月保險成本 = (NAR / 10000) × mRate */
+/* ═══════════════════════════════════════════════════════════════════
+   每月保險成本費率表（元/每萬淨危險保額）
+   來源：安聯10來旺【附表二】、富邦吉祥年年【附表五】
+   依性別分開儲存：AM=安聯男、AF=安聯女、BM=富邦男、BF=富邦女
+═══════════════════════════════════════════════════════════════════ */
+const MORT = {
+  /* 安聯10來旺 甲型 男性 費率（元/每萬NAR/月） */
+  AM: {
+    15:0.6267,16:0.8467,17:1.0500,18:1.0733,19:1.0875,
+    20:1.0942,21:1.0958,22:1.0933,23:1.0892,24:1.0842,
+    25:1.0817,26:1.0825,27:1.0892,28:1.1025,29:1.1258,
+    30:1.1608,31:1.2100,32:1.2750,33:1.3583,34:1.4583,
+    35:1.5717,36:1.6975,37:1.8342,38:1.9783,39:2.1333,
+    40:2.3008,41:2.4833,42:2.6833,43:2.9033,44:3.1425,
+    45:3.4033,46:3.6842,47:3.9867,48:4.3125,49:4.6642,
+    50:5.0467,51:5.4650,52:5.9233,53:6.4275,54:6.9833,
+    55:7.5983,56:8.2792,57:9.0325,58:9.8667,59:10.7867,
+    60:11.7983,61:12.9067,62:14.1183,63:15.4400,64:16.8842,
+    65:18.4642,66:20.1942,67:22.0875,68:24.1600,69:26.4292,
+    70:28.9150,71:31.6358,72:34.6125,73:37.8633,74:41.4175,
+    75:45.3025,76:49.5475,77:54.1800,78:59.2308,79:64.7383,
+    80:70.7408,81:77.2783,82:84.3900,83:92.1183,84:100.5092,
+    85:109.6133,86:119.4792,87:130.1567,88:141.6942,89:154.1417,
+    90:167.5458,91:181.9567,92:197.4225,93:213.9858,94:231.6692,
+    95:250.4908,96:270.4658,97:291.6133,98:313.9308,99:337.3458,
+    100:361.7658,110:833.3333
+  },
+  /* 安聯10來旺 甲型 女性 費率（元/每萬NAR/月，直接取自附表二） */
+  AF: {
+    15:0.2867,16:0.3267,17:0.3608,18:0.4008,19:0.4275,
+    20:0.4417,21:0.4467,22:0.4442,23:0.4375,24:0.4292,
+    25:0.4225,26:0.4200,27:0.4250,28:0.4392,29:0.4633,
+    30:0.4942,31:0.5317,32:0.5733,33:0.6192,34:0.6683,
+    35:0.7208,36:0.7758,37:0.8342,38:0.8950,39:0.9608,
+    40:1.0333,41:1.1133,42:1.2042,43:1.3058,44:1.4225,
+    45:1.5558,46:1.7075,47:1.8808,48:2.0758,49:2.2892,
+    50:2.5142,51:2.7450,52:2.9767,53:3.2067,54:3.4500,
+    55:3.7242,56:4.0483,57:4.4392,58:4.9125,59:5.4617,
+    60:6.0775,61:6.7508,62:7.4717,63:8.2350,64:9.0558,
+    65:9.9517,66:10.9417,67:12.0442,68:13.2783,69:14.6567,
+    70:16.1925,71:17.8983,72:19.7875,73:21.8733,74:24.1800,
+    75:26.7325,76:29.5550,77:32.6733,78:36.1142,79:39.9133,
+    80:44.1100,81:48.7408,82:53.8450,83:59.4633,84:65.6483,
+    85:72.4550,86:79.9375,87:88.1525,88:97.1558,89:107.0158,
+    90:117.8008,91:129.5808,92:142.4242,93:156.4008,94:171.5708,
+    95:187.9967,96:205.7392,97:224.8583,98:245.4000,99:267.3408,
+    100:290.6425,110:833.3333
+  },
+  /* 富邦吉祥年年 男性 費率（元/每萬NAR/月，直接取自附表五） */
+  BM: {
+    0:0.27,1:0.16,2:0.14,3:0.12,4:0.10,
+    5:0.10,6:0.09,7:0.09,8:0.10,9:0.10,
+    10:0.10,11:0.11,12:0.13,13:0.15,14:0.19,
+    15:0.25,16:0.28,17:0.32,18:0.34,19:0.36,
+    20:0.36,21:0.37,22:0.38,23:0.39,24:0.39,
+    25:0.41,26:0.42,27:0.43,28:0.45,29:0.47,
+    30:0.55,31:0.58,32:0.62,33:0.67,34:0.73,
+    35:0.81,36:0.89,37:0.97,38:1.06,39:1.16,
+    40:1.27,41:1.39,42:1.51,43:1.64,44:1.78,
+    45:2.01,46:2.17,47:2.34,48:2.52,49:2.71,
+    50:2.89,51:3.10,52:3.32,53:3.56,54:3.82,
+    55:4.22,56:4.51,57:4.84,58:5.19,59:5.57,
+    60:6.22,61:6.67,62:7.18,63:7.74,64:8.37,
+    65:9.39,66:10.19,67:11.12,68:12.18,69:13.36,
+    70:15.42,71:16.86,72:18.43,73:20.14,74:22.02,
+    75:23.90,76:26.17,77:28.66,78:31.41,79:34.40,
+    80:37.65,81:41.15,82:44.93,83:49.04,84:53.53,
+    85:58.46,86:63.90,87:69.89,88:76.25,89:82.96,
+    90:90.68,91:99.60,92:108.45,93:118.10,94:128.61,
+    95:140.07,96:152.57,97:166.19,98:181.04,99:197.23,
+    100:214.87,101:233.56,102:252.82,103:273.28,104:294.95,
+    105:317.80,110:833.33
+  },
+  /* 富邦吉祥年年 女性 費率（元/每萬NAR/月，直接取自附表五） */
+  BF: {
+    0:0.21,1:0.12,2:0.10,3:0.09,4:0.08,
+    5:0.07,6:0.07,7:0.07,8:0.06,9:0.06,
+    10:0.06,11:0.06,12:0.06,13:0.07,14:0.08,
+    15:0.11,16:0.12,17:0.13,18:0.14,19:0.15,
+    20:0.15,21:0.16,22:0.16,23:0.17,24:0.17,
+    25:0.20,26:0.21,27:0.22,28:0.23,29:0.24,
+    30:0.26,31:0.28,32:0.30,33:0.32,34:0.34,
+    35:0.37,36:0.40,37:0.43,38:0.46,39:0.50,
+    40:0.55,41:0.59,42:0.64,43:0.69,44:0.74,
+    45:0.85,46:0.91,47:0.98,48:1.05,49:1.13,
+    50:1.19,51:1.27,52:1.37,53:1.46,54:1.56,
+    55:1.80,56:1.92,57:2.06,58:2.22,59:2.41,
+    60:2.77,61:3.00,62:3.27,63:3.57,64:3.91,
+    65:4.67,66:5.12,67:5.66,68:6.27,69:6.97,
+    70:8.10,71:9.00,72:10.04,73:11.21,74:12.54,
+    75:13.61,76:15.26,77:17.12,78:19.18,79:21.47,
+    80:23.99,81:26.76,82:29.82,83:33.22,84:37.01,
+    85:41.28,86:46.09,87:51.51,88:57.60,89:64.40,
+    90:71.99,91:80.42,92:89.76,93:100.11,94:111.53,
+    95:124.14,96:138.04,97:153.31,98:170.05,99:188.36,
+    100:208.32,110:833.33
+  }
+};
+
+function getMort(table, age) {
+  if (table[age]) return table[age];
+  // fallback: nearest age
+  const ages = Object.keys(table).map(Number).sort((a,b)=>a-b);
+  const last = ages[ages.length-1];
+  if (age > last) return table[last];
+  for (let i = 0; i < ages.length-1; i++) {
+    if (age >= ages[i] && age <= ages[i+1]) {
+      const t = (age-ages[i])/(ages[i+1]-ages[i]);
+      return table[ages[i]] + t*(table[ages[i+1]]-table[ages[i]]);
+    }
+  }
+  return 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Helpers
+═══════════════════════════════════════════════════════ */
+function fmt(n) {
+  if (isNaN(n)||n===undefined) return '—';
+  const neg=n<0, a=Math.abs(n); let s;
+  if (a>=1e8)      s=(a/1e8).toFixed(2)+' 億元';
+  else if (a>=1e4) s=Math.round(a/1e4)+' 萬元';
+  else             s=Math.round(a).toLocaleString()+' 元';
+  return neg?'－'+s:s;
+}
+function fvA(pmt,r,n){
+  if(n<=0)return 0;
+  if(r===0)return pmt*n;
+  return pmt*((Math.pow(1+r,n)-1)/r);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Insurance year-by-year simulation（月度模擬）
+   完全依照安聯10來旺保險條款：
+   ・月保險成本 = (NAR/10000) × 月費率（附表二）
+   ・NAR（甲型）= max(0, 基本保額 - 保單帳戶價值)
+   ・保單管理費 = 每月 100 元（每保單週月日扣除）
+   ・加值給付金（附表六）：第6~10年按準時繳費次數給付
+   Returns { rows[], finalValue }
+═══════════════════════════════════════════════════════ */
+function simInsurance(pmt, r, nYrs, faceValue, frontLoads, mortTable, startAge, co, payYrs) {
+  let acct = 0;
+  const rows = [];
+  // 保單帳戶以年化報酬率 r（有效年率）月複利成長
+  // 月報酬率 = (1+r)^(1/12) - 1，與公版建議書一致
+  const rm = Math.pow(1 + r, 1/12) - 1;
+
+  // 繳費年期：超過 payYrs 後不再投入新保費，帳戶繼續複利成長
+  const PAY = (payYrs > 0) ? payYrs : nYrs;
+
+  // 附表六：加值給付金 —— 僅適用安聯10來旺（甲公司）
+  // 保單為月繳，第61~72筆（第6保單年）起每筆繳費加發獎勵
+  // 加值給付率：第6年20%、第7年20%、第8年20%、第9年30%、第10年60%
+  // 每筆加值給付金 = 加值給付率 × 平均已繳保費（等額月繳時 = pmt/12）
+  const BONUS_RATES = (co === 'A') ? { 6:0.20, 7:0.20, 8:0.20, 9:0.30, 10:0.60 } : {};
+
+  for (let y = 1; y <= nYrs; y++) {
+    const age = startAge + y - 1;
+    const acctStartOfYear = acct;
+
+    // 是否在繳費年期內
+    const inPayPeriod = (y <= PAY);
+
+    // 保費費用（附表一）：第1年60%，第2年30%，第3~5年20%，第6年起0%（繳費期內才適用）
+    const flRate = (inPayPeriod && y <= 5) ? (frontLoads[y-1] / 100) : 0;
+    // 顯示用年度匯總
+    const flAmt        = inPayPeriod ? pmt * flRate : 0;
+    const pmtAfterLoad = inPayPeriod ? pmt - flAmt  : 0;
+
+    // 加值給付金年度匯總（顯示用，繳費期內才給付）
+    const bonusRate = (inPayPeriod && BONUS_RATES[y]) ? BONUS_RATES[y] : 0;
+    const bonusAmt  = bonusRate * pmt;
+
+    // 月費率（附表二，每萬NAR每月）
+    const mRate = getMort(mortTable, age);
+
+    // 月度模擬
+    let yearInsCost = 0;
+    const yearMgmtFee = 1200; // 12 × 100
+    const monthlyNet   = inPayPeriod ? (pmt / 12) * (1 - flRate) : 0;
+    const monthlyBonus = inPayPeriod ? bonusRate * (pmt / 12) : 0;
+
+    for (let m = 1; m <= 12; m++) {
+      // ① 繳費期內：每月投入淨保費 + 加值給付金；繳費期結束後不投入
+      acct += monthlyNet + monthlyBonus;
+
+      // ② 甲型 NAR = max(0, 基本保額 - 保單帳戶價值)
+      const NAR = Math.max(0, faceValue - acct);
+
+      // 月保險成本 = (NAR / 10000) × 月費率
+      const mInsCost = (NAR / 10000) * mRate;
+      yearInsCost += mInsCost;
+
+      // ③④ 保單帳戶價值：扣除保險成本及管理費後依報酬率成長
+      acct = (acct - mInsCost - 100) * (1 + rm);
+    }
+
+    // 年末帳戶若為負值（極端情況）歸零
+    acct = Math.max(0, acct);
+
+    // 甲型身故保險金 = max(基本保額, 保單帳戶價值)
+    const db = Math.max(faceValue, acct);
+
+    // 危險保額（NAR）顯示說明：
+    // 保單條款採月計算，每月 NAR = max(0, 基本保額 - 當月帳戶)，隨月繳保費逐月遞減。
+    // 此處顯示「年末 NAR」= max(0, 基本保額 - 年末帳戶) 與公版建議書一致。
+    // 等效NAR = 年保險成本 / (月費率/10000×12)，可用來驗算：等效NAR × 月費率/10000 × 12 = 年保險成本
+    const NAR_yearEnd = Math.max(0, faceValue - acct);
+    const NAR_eff = (mRate > 0) ? yearInsCost / (mRate / 10000 * 12) : NAR_yearEnd;
+
+    rows.push({
+      y, age, acct, acctStartOfYear,
+      inPayPeriod,
+      flRate, flAmt, pmtAfterLoad, bonusAmt,
+      NAR: NAR_yearEnd, NAR_eff,
+      db, mRate, insCost: yearInsCost, mgmtFee: yearMgmtFee
+    });
+  }
+  return { finalValue: acct, rows };
+}
+
+/* ═══════════════════════════════════════════════════════
+   Global state
+═══════════════════════════════════════════════════════ */
+let G = {};
+
+/* ═══════════════════════════════════════════════════════
+   MAIN CALC
+═══════════════════════════════════════════════════════ */
+function onStockModeChange() {
+  // CSS :has() handles visual selection; nothing extra needed here.
+  // If results are already showing, auto-recalculate.
+  if (document.getElementById('results').style.display !== 'none') {
+    doCalc();
+  }
+}
+
+/* 切換保險公司時，自動帶入該保單的標準前置費用比率 */
+const CO_FRONT_LOADS = {
+  A: [60, 30, 20, 20, 20],   // 安聯10來旺（附表一）
+  B: [60, 35, 25, 15, 15]    // 富邦吉祥年年（附表一）
+};
+function onCoChange() {
+  const co = document.getElementById('i-co').value;
+  const loads = CO_FRONT_LOADS[co] || CO_FRONT_LOADS.A;
+  loads.forEach((v, i) => {
+    document.getElementById('i-fl' + (i+1)).value = v;
+  });
+  if (document.getElementById('results').style.display !== 'none') doCalc();
+}
+
+function onSexChange() {
+  if (document.getElementById('results').style.display !== 'none') doCalc();
+}
+
+function doCalc() {
+  const name   = (document.getElementById('i-name').value || '朋友').trim();
+  const age    = parseInt(document.getElementById('i-age').value);
+  const ret    = parseInt(document.getElementById('i-ret').value);
+  const life   = parseInt(document.getElementById('i-life').value);
+  const pmt    = parseFloat(document.getElementById('i-pmt').value);
+  const cAge   = parseFloat(document.getElementById('i-cage').value)  || 0;
+  const cCost  = parseFloat(document.getElementById('i-ccost').value) || 0;
+  const rate   = parseFloat(document.getElementById('i-rate').value) / 100;
+  const face     = parseFloat(document.getElementById('i-face').value) || 0;
+  const co       = document.getElementById('i-co').value;
+  const sex      = document.getElementById('i-sex').value;   // 'M' 或 'F'
+  const payYrs   = parseInt(document.getElementById('i-payyrs').value) || 20;
+  const fls      = [1,2,3,4,5].map(i => parseFloat(document.getElementById('i-fl'+i).value)||0);
+
+  if (!age||!ret||!life||!pmt) { alert('請確認年紀、退休年齡、預計壽命、每年可規劃金額均已填寫！'); return; }
+  if (ret<=age)  { alert('退休年齡必須大於當下年紀！'); return; }
+  if (life<=ret) { alert('預計壽命必須大於退休年齡！'); return; }
+
+  const n    = ret - age;
+  const rYrs = life - ret;
+  // 依保險公司 + 性別選取對應費率表：AM / AF / BM / BF
+  const mortTable = MORT[co + sex] || MORT['AM'];
+  const stockMode = document.querySelector('input[name="stock-mode"]:checked')?.value || 'compound';
+
+  /* ── 情境一計算 ── */
+  const bankFV   = fvA(pmt, 0.01, n);
+  const bankInc  = bankFV * 0.01;
+
+  // 股票：累積複利 or 領現金股利（每年配息不滾入，本金線性增長）
+  let stockFV, stockDiv;
+  if (stockMode === 'compound') {
+    stockFV  = fvA(pmt, rate, n);       // 年年複利滾入，退休時最大資產
+    stockDiv = stockFV * rate;           // 退休後以年化報酬率領股利
+  } else {
+    // 每年配息直接領出不再投入 → 本金 = pmt × n（線性）
+    stockFV  = pmt * n;
+    stockDiv = stockFV * rate;           // 退休後繼續以本金 × rate 領股利
+  }
+
+  // 保單模擬跑完整壽命（life - age 年），方便年度明細列出退休後帳戶走勢
+  const totalYrs  = life - age;
+  const insResult = simInsurance(pmt, rate, totalYrs, face, fls, mortTable, age, co, payYrs);
+  const insRows   = insResult.rows;
+  // 退休時帳戶價值取第 n 年（累積期末）
+  const insFV     = insRows[n - 1] ? insRows[n - 1].acct : insResult.finalValue;
+  const insInc    = insFV * rate;  // 退休後以年化報酬率領利息，本金不動
+
+  const sexLabel = sex === 'M' ? '男性' : '女性';
+  const coLabel  = co === 'A' ? '甲（安聯10來旺）' : '乙（富邦吉祥年年）';
+
+  G = { name,age,ret,life,pmt,cAge,cCost,rate,face,fls,co,sex,payYrs,mortTable,
+        n,rYrs, bankFV,bankInc, stockFV,stockDiv, stockMode,
+        insFV,insInc,insRows };
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('r-name').textContent = name + ' 您好！';
+  document.getElementById('r-summary').textContent =
+    `${sexLabel}｜當下 ${age} 歲 → 預計 ${ret} 歲退休 → 壽命 ${life} 歲｜累積期 ${n} 年，退休享用期 ${rYrs} 年` +
+    `｜投資報酬率 ${(rate*100).toFixed(1)}%，壽險保額 ${fmt(face)}` +
+    `，繳費年期 ${Math.min(payYrs,n)} 年（共繳 ${Math.min(payYrs,n)} 年後帳戶繼續複利）` +
+    `，費率：${coLabel}`;
+
+  buildGantt('r-gantt-s1', null);
+  renderS1();
+  buildDetailTable();
+
+  const sl = document.getElementById('sl-death');
+  sl.min = age; sl.max = ret-1; sl.value = age;
+  updateS2();
+
+  setTimeout(() => document.getElementById('results').scrollIntoView({behavior:'smooth'}), 80);
+}
+
+/* ═══════════════════════════════════════════════════════
+   GANTT builder
+   deathAge: null → S1（無身故線）
+   deathAge: number, deathVals:{bank,stock,ins} → S2
+═══════════════════════════════════════════════════════ */
+function buildGantt(targetId, deathAge, deathVals) {
+  const { age,ret,life,n, bankFV,bankInc, stockFV,stockDiv, insFV,insInc, rate, stockMode } = G;
+  const total  = life - age;
+  const retPct = n / total * 100;
+  const dAge   = (deathAge!=null && deathAge>age && deathAge<ret) ? deathAge : null;
+  const dPct   = dAge ? (dAge-age)/total*100 : null;
+  const isS2   = dAge != null;
+  const stockModeLabel = stockMode === 'dividend'
+    ? `股票<br>（領股利）`
+    : `股票<br>（${(rate*100).toFixed(0)}%複利）`;
+
+  /* ── axis ticks ── */
+  const ts = Math.ceil(age/5)*5;
+  let ticks = '';
+  for (let a = ts; a <= life; a+=5) {
+    const p = (a-age)/total*100;
+    const isRet   = a===ret;
+    const isDeath = dAge && a===dAge;
+    let cls = 'g-tick';
+    if (isDeath)      cls += ' dth';
+    else if (isRet)   cls += ' ret';
+    else if (a%10===0) cls += ' maj';
+    const lbl = isDeath ? `⚡ ${dAge}歲` : isRet ? `退休 ${ret}歲` : `${a}`;
+    ticks += `<div class="${cls}" style="left:${p}%"><div class="g-tick-ln"></div><div class="g-tick-lb">${lbl}</div></div>`;
+  }
+
+  /* ── row definitions ── */
+  const rows = [
+    { cls:'bank',   icon:'🏦', name:'銀行<br>定存（1%）',
+      s1Acc:`累積 ${fmt(bankFV)}`, s1Dist:`年領利息 ${fmt(bankInc)}`,
+      s2Val: deathVals?.bank,  s2Lbl:'身故時累積', isIns:false },
+    { cls:'stocks', icon:'📈', name: stockModeLabel,
+      s1Acc:`累積 ${fmt(stockFV)}`, s1Dist:`年領股利 ${fmt(stockDiv)}`,
+      s2Val: deathVals?.stock, s2Lbl:'身故時帳戶', isIns:false },
+    { cls:'insure', icon:'🛡️', name:'投資型<br>保單',
+      s1Acc:`累積 ${fmt(insFV)}`, s1Dist:`年領 ${fmt(insInc)}（本金不減）`,
+      s2Val: deathVals?.ins,   s2Lbl:'身故理賠',   isIns:true }
+  ];
+
+  let rowsHTML = '';
+  rows.forEach(r => {
+
+    /* ── fade overlays ── */
+    let fadeHTML = '';
+    if (isS2 && dPct!=null) {
+      if (!r.isIns) {
+        // 銀行/股票：身故後全段（含退休期）都淡出
+        fadeHTML = `<div class="g-fade" style="left:${dPct}%;width:${100-dPct}%"></div>`;
+      } else {
+        // 保單：只淡出退休期（累積期保留，呈現保障全額）
+        fadeHTML = `<div class="g-fade-dist" style="left:${retPct}%;width:${100-retPct}%"></div>`;
+      }
+    }
+
+    /* ── vertical lines ── */
+    const retLine = `<div class="g-vline ret" style="left:${retPct}%"></div>`;
+    const dthLine = dPct!=null ? `<div class="g-vline dth" style="left:${dPct}%"></div>` : '';
+
+    /* ── death value tag ON the bar (S2 only) ── */
+    let deathTag = '';
+    if (isS2 && dPct!=null && r.s2Val!=null) {
+      const tc = r.isIns ? '#276749' : '#c53030';
+      const tb = r.isIns ? '#f0fff4' : '#fff5f5';
+      // position tag to the right of death line; flip to left if near right edge
+      const flipLeft = dPct > 65;
+      const tagStyle = flipLeft
+        ? `right:${100-dPct}%;transform:translate(-6px,-50%);`
+        : `left:${dPct}%;transform:translate(6px,-50%);`;
+      deathTag = `
+        <div style="position:absolute;top:50%;${tagStyle}z-index:20;
+                    background:${tb};border:2px solid ${tc};border-radius:7px;
+                    padding:3px 10px;font-size:.78rem;font-weight:800;color:${tc};
+                    white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.13);line-height:1.4;">
+          ${r.s2Lbl}<br>${fmt(r.s2Val)}
+        </div>`;
+    }
+
+    /* ── annotation row ── */
+    let annotsHTML = '';
+    if (isS2) {
+      // acc zone（0→death）右對齊顯示文字；dist zone 顯示「已身故」
+      const accWidth = Math.max(dPct ?? 0, 0);
+      annotsHTML = `
+        <div class="g-an acc" style="width:${accWidth}%;">${r.s2Lbl} ${fmt(r.s2Val)}</div>
+        <div class="g-an" style="position:absolute;left:${retPct}%;width:${100-retPct}%;
+             text-align:center;color:#a0aec0;font-size:.77rem;font-weight:600;top:0;">
+          ── 已身故，未達退休 ──
+        </div>`;
+    } else {
+      annotsHTML = `
+        <div class="g-an acc"  style="width:${retPct}%">${r.s1Acc}</div>
+        <div class="g-an dist ${r.cls}" style="left:${retPct}%;width:${100-retPct}%">${r.s1Dist}</div>`;
+    }
+
+    rowsHTML += `
+    <div class="gantt-row">
+      <div class="gantt-row-lbl">${r.icon}<br>${r.name}</div>
+      <div class="gantt-bar-area">
+        <div class="gantt-bars">
+          <div class="gantt-bars-inner">
+            <div class="g-acc ${r.cls}" style="width:${retPct}%"></div>
+            <div class="g-dist ${r.cls}" style="left:${retPct}%;width:${100-retPct}%"></div>
+          </div>
+          <div class="gantt-overlay">
+            ${fadeHTML}${retLine}${dthLine}${deathTag}
+          </div>
+        </div>
+        <div class="gantt-annots">${annotsHTML}</div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById(targetId).innerHTML = `
+    <div>
+      <div class="gantt-axis-row">
+        <div class="gantt-lbl-w"></div>
+        <div class="gantt-axis">${ticks}</div>
+      </div>
+      ${rowsHTML}
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Scenario 1 cards
+═══════════════════════════════════════════════════════ */
+function renderS1() {
+  const {bankFV,bankInc,stockFV,stockDiv,insFV,insInc,rYrs,rate,stockMode,n,pmt} = G;
+  const isDiv = stockMode === 'dividend';
+  const stockAccLabel  = isDiv
+    ? `退休時本金（每年配息領出，本金線性累積）`
+    : `退休時累積（${(rate*100).toFixed(1)}%複利）`;
+  const stockDivLabel  = isDiv
+    ? `每年股利（本金 × ${(rate*100).toFixed(1)}%，逐年遞增中，退休後固定領）`
+    : `每年股利收入（累積資產 × ${(rate*100).toFixed(1)}%）`;
+  const stockNote = isDiv
+    ? `每年配息領出不滾入，本金 = 每年投入 × 年數，退休後持續領股利`
+    : `複利累積，退休後領股利、本金保留`;
+
+  document.getElementById('r-s1-grid').innerHTML = `
+    <div class="opt-card bank">
+      <div class="opt-icon">🏦</div><div class="opt-name bank">銀行定存</div>
+      <div class="rl">退休時累積</div><div class="rv bank">${fmt(bankFV)}</div>
+      <div class="rl">每年可領（利息，本金不動）</div><div class="rv bank">${fmt(bankInc)}</div>
+      <div class="rl">每月約可領</div><div class="rv bank">${fmt(bankInc/12)}</div>
+      <div class="opt-note">年利率 1%，複利滾存</div>
+    </div>
+    <div class="opt-card stocks">
+      <div class="opt-icon">📈</div><div class="opt-name stocks">股票投資
+        <span style="font-size:.75rem;font-weight:500;color:var(--orange);margin-left:8px;">
+          ${isDiv ? '💸 領現金股利' : '🔄 累積複利'}
+        </span>
+      </div>
+      <div class="rl">${stockAccLabel}</div><div class="rv stocks">${fmt(stockFV)}</div>
+      <div class="rl">${stockDivLabel}</div><div class="rv stocks">${fmt(stockDiv)}</div>
+      <div class="rl">每月約可領</div><div class="rv stocks">${fmt(stockDiv/12)}</div>
+      <div class="opt-note">${stockNote}</div>
+    </div>
+    <div class="opt-card insure">
+      <div class="opt-icon">🛡️</div><div class="opt-name insure">投資型保單</div>
+      <div class="rl">退休時帳戶價值（扣前置+保費）</div><div class="rv hi">${fmt(insFV)}</div>
+      <div class="rl">每年可領（帳戶價值 × ${(rate*100).toFixed(1)}%，本金不減）</div><div class="rv hi">${fmt(insInc)}</div>
+      <div class="rl">每月約可領</div><div class="rv hi">${fmt(insInc/12)}</div>
+      <div class="opt-note good">退休後NAR=0，無保費扣除，帳戶持續複利成長</div>
+    </div>`;
+
+  const maxV = Math.max(bankFV,stockFV,insFV);
+  document.getElementById('r-s1-chart').innerHTML = makeChart([
+    {lbl:'🏦 銀行定存',val:bankFV,cls:'bank'},
+    {lbl:'📈 股票投資',val:stockFV,cls:'stocks'},
+    {lbl:'🛡️ 投資型保單',val:insFV,cls:'insure'}
+  ], maxV);
+
+  const mI=(insFV/bankFV).toFixed(1), mS=(stockFV/bankFV).toFixed(1);
+  const stockSumNote = isDiv
+    ? `股票（領股利模式）退休本金 <strong>${fmt(stockFV)}</strong>，每年股利 <strong>${fmt(stockDiv)}</strong>，本金線性累積不複利`
+    : `股票（複利模式）退休資產 <strong>${fmt(stockFV)}</strong>（定存 ${mS}倍），每年股利 <strong>${fmt(stockDiv)}</strong>`;
+  document.getElementById('r-s1-sum').innerHTML = `
+    <h3>📊 情境一小結</h3>
+    <p>✦ 退休資產：保單 <strong>${fmt(insFV)}</strong>（定存 ${mI}倍）｜定存 <strong>${fmt(bankFV)}</strong>。</p>
+    <p>✦ ${stockSumNote}。</p>
+    <p>✦ 每年可領：保單 <strong>${fmt(insInc)}</strong>（帳戶×${(rate*100).toFixed(1)}%，本金不動）｜股票股利 <strong>${fmt(stockDiv)}</strong>｜定存利息 <strong>${fmt(bankInc)}</strong>。</p>
+    <p>✦ 保單退休後帳戶價值已超過壽險保額，危險保額NAR=0，無任何保費扣除，帳戶持續複利成長並可永久領取收益。</p>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Detail table
+═══════════════════════════════════════════════════════ */
+function buildDetailTable() {
+  const { insRows, pmt, face, n: retYr, ret, age: startAge, rate } = G;
+  // 計算說明：採月計算模式
+  // 每月：帳戶 += 月淨保費（+加值給付金） → NAR = max(0, 保額 - 帳戶) → 扣月保費&管理費 → 帳戶 × (1+月報酬率)
+  // 保險成本（月計年總）= Σ(m=1~12) NAR_m × 月費率/10000
+  // 危險保額（年末NAR）= max(0, 保額 - 年末帳戶)，與公版建議書表格一致
+  // ⚠️ 驗算注意：月計模式下，年末NAR × 月費率×12/10000 ≠ 年保險成本（因NAR逐月遞減），
+  //    此為正常現象，與公版月計公式完全一致。
+  const rateStr = (rate * 100).toFixed(1);
+  let html = `<div style="font-size:.78rem;color:#718096;margin-bottom:4px;padding:0 2px;">
+    📌 計算方式：月計模式——每月計算NAR與保費成本，年度值為12個月加總。危險保額顯示「年末NAR」與公版建議書一致。
+    ｜📈 <b style="color:#2b6cb0;">投資年化報酬率：${rateStr}%</b>（月複利：月利率 = (1+${rateStr}%)^(1/12)−1）
+  </div>
+  <table class="detail-tbl">
+    <tr>
+      <th>年度</th><th>年齡</th>
+      <th>年繳保費</th><th>前置費用<br>（比率）</th><th>前置費用<br>（金額）</th>
+      <th>扣前置後<br>保費</th>
+      <th>加值給付金<br>（附表六）</th>
+      <th>年初帳戶<br>（上年末）</th>
+      <th title="年末危險保額 = max(0, 基本保額 - 年末帳戶)；月計模式下保險成本從每月NAR×月費率加總，非此欄位直接×12">危險保額<br>NAR（年末）</th>
+      <th>月費率<br>（元/萬）</th>
+      <th title="月計年總：Σ(1~12月) NAR月 × 月費率/10000">保險成本<br>（月計年總）</th>
+      <th>保單管理費<br>（年）</th>
+      <th>身故保險金<br>（年末）</th>
+      <th>帳戶價值<br>（年末）</th>
+    </tr>`;
+
+  insRows.forEach(r => {
+    const hasBonus  = r.bonusAmt > 0;
+    const paying    = r.inPayPeriod;
+    const isRetired = r.y > retYr;
+    const isRetYr   = r.y === retYr;   // 退休當年 → 加分隔線
+
+    // 退休後整列用淺藍底色區隔；停繳但未退休用灰字
+    const rowStyle = isRetired
+      ? ' style="background:#ebf8ff;"'
+      : (!paying ? ' style="color:#718096"' : '');
+
+    // 在退休年份上方插入一列說明
+    if (isRetYr) {
+      html += `<tr><td colspan="14" style="background:#e2e8f0;font-weight:700;font-size:.88rem;text-align:center;padding:6px 0;color:#2b6cb0;">
+        ── 第 ${retYr} 年（${ret} 歲）退休 ── 以下為退休後帳戶複利走勢 ──
+      </td></tr>`;
+    }
+
+    html += `<tr${rowStyle}>
+      <td>${r.y}</td>
+      <td>${r.age}${paying ? '' : ' <span style="font-size:.75rem;color:#a0aec0">（停繳）</span>'}</td>
+      <td>${paying ? fmt(pmt) : '—'}</td>
+      <td>${paying ? (r.flRate*100).toFixed(0)+'%' : '—'}</td>
+      <td>${paying ? fmt(r.flAmt) : '—'}</td>
+      <td>${paying ? fmt(r.pmtAfterLoad) : '—'}</td>
+      <td class="${hasBonus?'hi':''}">${hasBonus ? fmt(r.bonusAmt) : '—'}</td>
+      <td>${fmt(r.acctStartOfYear)}</td>
+      <td class="${r.NAR<1?'lo':''}" title="年末NAR=${Math.round(r.NAR).toLocaleString()}元\n等效NAR（驗算用）=${Math.round(r.NAR_eff).toLocaleString()}元\n驗算：等效NAR × ${r.mRate.toFixed(4)}/萬 × 12 = ${fmt(r.insCost)}">${fmt(r.NAR)}</td>
+      <td>${r.mRate.toFixed(4)}</td>
+      <td title="月計總保費 = Σ各月NAR × ${r.mRate.toFixed(4)}/10000\n月計模式下年末NAR × 月費率×12 ≠ 此值（正常）">${fmt(r.insCost)}</td>
+      <td>${fmt(r.mgmtFee)}</td>
+      <td>${fmt(r.db)}</td>
+      <td><b>${fmt(r.acct)}</b></td>
+    </tr>`;
+  });
+
+  html += `<tr style="background:#f7fafc;font-size:.75rem;color:#718096;">
+    <td colspan="14" style="padding:6px 8px;text-align:left;">
+      💡 <b>公式說明</b>：採月計模式，每月計算 NAR（甲型：保額 - 帳戶）→ 扣月保費成本與管理費 → 月複利成長。
+      年保險成本 = Σ(1~12月) NAR_月 × 月費率/10000，與公版建議書月計算邏輯一致。
+      如需驗算：滑鼠移到「危險保額」欄位可查看等效NAR，等效NAR × 月費率/萬 × 12 = 年保險成本 ✓
+    </td>
+  </tr>`;
+  html += '</table>';
+  document.getElementById('ins-detail-table').innerHTML = html;
+}
+
+function toggleDetail() {
+  const w   = document.getElementById('ins-detail-wrap');
+  const btn = document.querySelector('.detail-toggle');
+  // 用 getComputedStyle 可靠判斷（不受 CSS vs inline 差異影響）
+  const shown = getComputedStyle(w).display !== 'none';
+  if (shown) {
+    // 收起：先退出全螢幕
+    w.classList.remove('fs-mode');
+    document.body.style.overflow = '';
+    w.style.display = 'none';
+    btn.textContent = '📋 查看投資型保單年度詳細計算 ▼';
+    const fsb = document.getElementById('detail-fs-btn');
+    if (fsb) fsb.textContent = '⛶ 全螢幕展開';
+  } else {
+    w.style.display = 'block';
+    btn.textContent = '📋 收起年度詳細計算 ▲';
+  }
+}
+
+function toggleDetailFS() {
+  const w   = document.getElementById('ins-detail-wrap');
+  const fsb = document.getElementById('detail-fs-btn');
+  if (w.classList.contains('fs-mode')) {
+    w.classList.remove('fs-mode');
+    document.body.style.overflow = '';
+    fsb.textContent = '⛶ 全螢幕展開';
+  } else {
+    w.classList.add('fs-mode');
+    document.body.style.overflow = 'hidden';
+    w.scrollTop = 0;
+    fsb.textContent = '⊡ 退出全螢幕';
+  }
+}
+
+// ESC 鍵退出全螢幕
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const w = document.getElementById('ins-detail-wrap');
+    if (w && w.classList.contains('fs-mode')) {
+      w.classList.remove('fs-mode');
+      document.body.style.overflow = '';
+      const fsb = document.getElementById('detail-fs-btn');
+      if (fsb) fsb.textContent = '⛶ 全螢幕展開';
+    }
+  }
+});
+
+/* ═══════════════════════════════════════════════════════
+   Scenario 2
+═══════════════════════════════════════════════════════ */
+function updateS2() {
+  const dAge = parseInt(document.getElementById('sl-death').value);
+  const yInv = dAge - G.age;
+
+  document.getElementById('r-death-lbl').textContent =
+    `萬一在 ${dAge} 歲身故（距今 ${yInv} 年後）`;
+
+  // Compute death values FIRST so they can be shown on the Gantt chart
+  const bankD  = fvA(G.pmt, 0.01, yInv);
+  // 股票：複利模式 → 複利累積；領股利模式 → 本金線性（每年配息已提走）
+  const stockD = G.stockMode === 'dividend'
+    ? G.pmt * yInv
+    : fvA(G.pmt, G.rate, yInv);
+
+  // insurance at death: use pre-computed rows from doCalc()
+  let insAcctAtDeath = 0;
+  if (yInv > 0 && G.insRows.length >= yInv) {
+    insAcctAtDeath = G.insRows[yInv-1].acct;
+  }
+  // 甲型身故保險金 = max(基本保額, 保單帳戶價值)
+  // 依條款第二條：NAR = max(0, 保額 - 帳戶)，身故理賠 = NAR + 帳戶 = max(保額, 帳戶)
+  const insD = Math.max(insAcctAtDeath, G.face);
+
+  // Now build gantt with death values
+  buildGantt('r-gantt-s2', dAge, {bank: bankD, stock: stockD, ins: insD});
+
+  const bankNet  = bankD  - G.cCost;
+  const stockNet = stockD - G.cCost;
+  const insNet   = insD   - G.cCost;
+
+  function warn(net) {
+    return net < 0
+      ? `<div style="color:#c53030;font-size:.82rem;margin-top:6px;">⚠️ 不足以支付孩子扶養費，面臨財務缺口</div>`
+      : '';
+  }
+
+  // 甲型：身故保險金 = max(保額, 帳戶)
+  const insDeathNote = insAcctAtDeath >= G.face
+    ? `帳戶價值（${fmt(insAcctAtDeath)}）≥ 保額，以帳戶價值理賠`
+    : `帳戶價值（${fmt(insAcctAtDeath)}）< 保額 ${fmt(G.face)}，依甲型條款以保額理賠`;
+
+  document.getElementById('r-s2-grid').innerHTML = `
+    <div class="opt-card bank">
+      <div class="opt-icon">🏦</div><div class="opt-name bank">銀行定存</div>
+      <div class="rl">身故時已累積金額</div><div class="rv bank">${fmt(bankD)}</div>
+      <div class="rl">扣除孩子扶養費後，孩子實得</div>
+      <div class="rv ${bankNet<0?'danger':'bank'}">${fmt(bankNet)}</div>${warn(bankNet)}
+    </div>
+    <div class="opt-card stocks">
+      <div class="opt-icon">📈</div><div class="opt-name stocks">股票投資</div>
+      <div class="rl">身故時帳戶市值</div><div class="rv stocks">${fmt(stockD)}</div>
+      <div class="rl">扣除孩子扶養費後，孩子實得</div>
+      <div class="rv ${stockNet<0?'danger':'stocks'}">${fmt(stockNet)}</div>${warn(stockNet)}
+    </div>
+    <div class="opt-card insure">
+      <div class="opt-icon">🛡️</div><div class="opt-name insure">投資型保單</div>
+      <div class="rl">身故理賠金（取較高者）</div><div class="rv hi">${fmt(insD)}</div>
+      <div class="rl" style="font-size:.75rem;color:var(--green);">${insDeathNote}</div>
+      <div class="rl" style="margin-top:6px;">扣除孩子扶養費後，孩子實得</div>
+      <div class="rv hi">${fmt(insNet)}</div>
+      <div class="opt-note good">✅ 壽險保障從第一天起即生效</div>
+    </div>`;
+
+  const maxV2 = Math.max(bankNet,stockNet,insNet,1);
+  document.getElementById('r-s2-chart').innerHTML = makeChart([
+    {lbl:'🏦 銀行定存',val:Math.max(0,bankNet),cls:'bank'},
+    {lbl:'📈 股票投資',val:Math.max(0,stockNet),cls:'stocks'},
+    {lbl:'🛡️ 投資型保單',val:Math.max(0,insNet),cls:'insure'}
+  ], Math.max(maxV2,1));
+
+  document.getElementById('r-s2-sum').innerHTML = `
+    <h3>📊 情境二小結（身故於 ${dAge} 歲）</h3>
+    <p>✦ 銀行定存遺產（扣費後）：<strong>${fmt(bankNet)}</strong></p>
+    <p>✦ 股票遺產（扣費後）：<strong>${fmt(stockNet)}</strong></p>
+    <p>✦ 保單理賠（扣費後）：<strong>${fmt(insNet)}</strong>（${insDeathNote}）</p>
+    <p style="margin-top:10px;">💡 投資型壽險的核心優勢：<strong>「先擁有保障，再慢慢累積」</strong>——帳戶累積前期較慢（因前置費用與保費），但保障從第一天即生效。</p>`;
+}
+
+/* ── bar chart ── */
+function makeChart(items, maxV) {
+  if (maxV<=0) maxV=1;
+  return items.map(({lbl,val,cls})=>{
+    const pct = Math.min(100,Math.max(0,val/maxV*100)).toFixed(1);
+    return `<div class="bar-row">
+      <div class="bar-lbl">${lbl}</div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="bar-amt">${fmt(val)}</div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
