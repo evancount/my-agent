@@ -30,6 +30,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet && echo "No changes" && exit 0
-          git add fund-simulator.html "安聯收益成長基金投資模擬器.html"
+          git add fund-simulator.html "安聯收益成長基金投資模擬器.html" multi-fund-data.js
           git commit -m "auto: update fund NAV/dividend data $(date +%Y-%m)"
           git push
