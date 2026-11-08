@@ -78,8 +78,8 @@ tr:hover td{background:#e8f0fe}
 </div>
 </div>
 <script>
-function checkPw(){var h='0576766efa0644463dbdae6a0e336a14fc3a0360394420581543e4c4eab559de',i=document.getElementById('pw-input'),v=i.value;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(b){var a=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(a===h){document.getElementById('pw-gate').style.display='none';sessionStorage.setItem('pw-ok','1')}else{document.getElementById('pw-err').textContent='密碼錯誤，請重試';i.value='';i.focus()}})}
-document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('pw-ok')==='1'){document.getElementById('pw-gate').style.display='none'}var inp=document.getElementById('pw-input');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter')checkPw()})});
+function checkPw(){var h='dc9fffa3aefe3d0376e0462c3eb989329c13cc11bec2ac80aa3aa40e61477f90',i=document.getElementById('pw-input'),v=i.value;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(b){var a=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(a===h){document.getElementById('pw-gate').style.display='none';sessionStorage.setItem('pw-ok-fund','1')}else{document.getElementById('pw-err').textContent='密碼錯誤，請重試';i.value='';i.focus()}})}
+document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('pw-ok-fund')==='1'){document.getElementById('pw-gate').style.display='none'}var inp=document.getElementById('pw-input');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter')checkPw()})});
 </script>
 
 <div class="container">
