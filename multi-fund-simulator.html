@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>配息＋累積 基金組合模擬器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f6f8;--card:#ffffff;--border:#d8dde3;--accent:#1565c0;--accent2:#2e7d32;--accent3:#e65100;--red:#c62828;--text:#1a1a1a;--textDim:#5f6b7a;--white:#111}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
+.container{max-width:1100px;margin:0 auto}
+h1{text-align:center;font-size:1.6rem;color:var(--white);margin-bottom:6px;letter-spacing:1px}
+.subtitle{text-align:center;color:var(--textDim);font-size:.85rem;margin-bottom:24px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.panel-title{font-size:1.05rem;font-weight:600;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}body{padding:12px 16px}}
+label{display:block;font-size:.8rem;color:var(--textDim);margin-bottom:4px;font-weight:500}
+select,input[type=number]{width:100%;padding:10px 12px;background:#f0f2f5;border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:.95rem;outline:none;transition:border .2s}
+select:focus,input:focus{border-color:var(--accent)}
+.pick{border-radius:10px;padding:16px;border:1px solid var(--border)}
+.pick.div{background:#eef6ee;border-color:#c5dfc6}
+.pick.acc{background:#fdf1e7;border-color:#f0d2b8}
+.pick h3{font-size:.95rem;margin-bottom:10px}
+.pick.div h3{color:var(--accent2)}
+.pick.acc h3{color:var(--accent3)}
+.pick select{background:#fff}
+.range-note{font-size:.75rem;color:var(--textDim);margin-top:6px}
+.slider-row{display:flex;align-items:center;gap:8px}
+.slider-row span{white-space:nowrap}
+.slider-row input[type=range]{flex:1;min-width:60px;accent-color:var(--accent)}
+.slider-val{min-width:44px;text-align:right;font-weight:700;font-size:1.1rem}
+.check-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:.9rem}
+.check-row input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#1976d2,#1565c0);color:#fff;border:none;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .2s;letter-spacing:1px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(25,118,210,.4)}
+.results{display:none}
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:#f0f2f5;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-label{font-size:.75rem;color:var(--textDim);letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+.green{color:var(--accent2)}.blue{color:var(--accent)}.orange{color:var(--accent3)}.red{color:var(--red)}
+.chart-container{position:relative;width:100%;height:400px;margin:16px 0}
+@media(max-width:700px){.chart-container{height:300px}}
+table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+th{background:#e8edf2;color:var(--accent);padding:10px 8px;text-align:right;position:sticky;top:0;font-weight:600;white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:8px;text-align:right;border-bottom:1px solid #e0e4e8;white-space:nowrap}
+td:first-child{text-align:left;color:var(--textDim)}
+tr:hover td{background:#e8f0fe}
+.table-wrap{max-height:400px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+.note{font-size:.75rem;color:var(--textDim);margin-top:12px;line-height:1.6}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px 8px 0 0;color:var(--textDim);cursor:pointer;font-size:.85rem}
+.tab-btn.active{background:var(--card);color:var(--accent);border-bottom-color:var(--card);font-weight:600}
+.hidden{display:none}
+.combo{font-size:.85rem;color:var(--textDim);margin-bottom:12px;line-height:1.6}
+#pw-gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#pw-gate .pw-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.12);max-width:380px;width:90%}
+#pw-gate h2{font-size:1.3rem;margin-bottom:8px;color:var(--accent)}
+#pw-gate p{color:var(--textDim);font-size:.85rem;margin-bottom:20px}
+#pw-gate input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:1rem;margin-bottom:12px;outline:none;text-align:center;letter-spacing:2px}
+#pw-gate input:focus{border-color:var(--accent)}
+#pw-gate .pw-err{color:var(--red);font-size:.8rem;min-height:1.2em;margin-bottom:8px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="multi-fund-data.js"></script>
+</head>
+<body>
+<div id="pw-gate">
+<div class="pw-box">
+<h2>🔒 請輸入密碼</h2>
+<p>此工具僅限授權使用者存取</p>
+<input type="password" id="pw-input" placeholder="請輸入密碼" autofocus>
+<div class="pw-err" id="pw-err"></div>
+<button class="btn" onclick="checkPw()">進入模擬器</button>
+</div>
+</div>
+<script>
+function checkPw(){var h='0576766efa0644463dbdae6a0e336a14fc3a0360394420581543e4c4eab559de',i=document.getElementById('pw-input'),v=i.value;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(b){var a=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(a===h){document.getElementById('pw-gate').style.display='none';sessionStorage.setItem('pw-ok','1')}else{document.getElementById('pw-err').textContent='密碼錯誤，請重試';i.value='';i.focus()}})}
+document.addEventListener('DOMContentLoaded',function(){if(sessionStorage.getItem('pw-ok')==='1'){document.getElementById('pw-gate').style.display='none'}var inp=document.getElementById('pw-input');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter')checkPw()})});
+</script>
+
+<div class="container">
+<h1>📊 配息＋累積 基金組合模擬器</h1>
+<p class="subtitle">左邊選一檔配息基金、右邊選一檔累積型基金（或 S&P 500），回測單筆／定期定額的歷史表現<br><span id="updated"></span></p>
+
+<div class="panel">
+<div class="panel-title">⚙️ 投資設定</div>
+<div class="grid2" style="margin-bottom:16px">
+<div class="pick div">
+<h3>💵 配息基金</h3>
+<select id="fundA"></select>
+<div class="range-note" id="rangeA"></div>
+</div>
+<div class="pick acc">
+<h3>📈 累積型基金 / ETF</h3>
+<select id="fundB"></select>
+<div class="range-note" id="rangeB"></div>
+</div>
+</div>
+
+<div style="margin-bottom:16px">
+<label>配置比例</label>
+<div class="slider-row">
+<span style="font-size:.85rem;color:var(--accent2)">配息</span>
+<span class="slider-val green" id="allocLabel">60%</span>
+<input type="range" id="allocSlider" min="0" max="100" step="5" value="60" aria-label="配息基金配置比例">
+<span class="slider-val orange" id="allocLabelB">40%</span>
+<span style="font-size:.85rem;color:var(--accent3)">累積</span>
+</div>
+</div>
+
+<div class="grid3" style="margin-bottom:16px">
+<div>
+<label>計價幣別</label>
+<select id="baseCcy">
+<option value="USD">美元（USD）</option>
+<option value="TWD">新台幣（TWD）</option>
+</select>
+</div>
+<div>
+<label>投資方式</label>
+<select id="investType">
+<option value="lump">單筆投入</option>
+<option value="dca">定期定額（每月）</option>
+</select>
+</div>
+<div>
+<label id="amountLabel">單筆投入金額（USD）</label>
+<input type="number" id="amount" value="10000" min="1" step="100">
+</div>
+</div>
+<div class="grid3" style="margin-bottom:16px">
+<div>
+<label>投資起始月份</label>
+<select id="startDate"></select>
+</div>
+<div>
+<label>投資結束月份</label>
+<select id="endDate"></select>
+</div>
+<div>
+<label>配息處理方式</label>
+<select id="dividendAction">
+<option value="cash">配息領現金（不再投入）</option>
+<option value="reinvest">配息再投入同一檔配息基金</option>
+<option value="toB">配息轉投入累積型基金（母子基金）</option>
+</select>
+</div>
+</div>
+<div class="grid2" style="margin-bottom:20px">
+<label class="check-row"><input type="checkbox" id="rebalance" checked><span>啟用年度再平衡（每年 1 月）</span></label>
+<label class="check-row"><input type="checkbox" id="deductFee"><span>扣除前收手續費（每次投入）</span>
+<input type="number" id="feeRate" value="3" min="0" max="10" step="0.5" style="width:70px;padding:4px 8px" aria-label="手續費率">%</label>
+</div>
+<button class="btn" onclick="runSimulation()">🚀 開始模擬</button>
+</div>
+
+<div class="results" id="results">
+<div class="panel">
+<div class="panel-title">📈 模擬結果</div>
+<div class="combo" id="comboText"></div>
+<div class="stat-cards" id="statCards"></div>
+<div class="chart-container"><canvas id="mainChart"></canvas></div>
+</div>
+<div class="panel">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchTab('monthly')">逐月明細</button>
+<button class="tab-btn" onclick="switchTab('yearly')">年度摘要</button>
+<button class="tab-btn" onclick="switchTab('rebal')">再平衡紀錄</button>
+</div>
+<div id="tab-monthly"><div class="table-wrap" id="monthlyTable"></div></div>
+<div id="tab-yearly" class="hidden"><div class="table-wrap" id="yearlyTable"></div></div>
+<div id="tab-rebal" class="hidden"><div class="table-wrap" id="rebalTable"></div></div>
+</div>
+</div>
+
+<div class="note">
+⚠️ 本模擬器使用歷史數據回測，不代表未來績效。基金淨值與配息來自鉅亨網，SPY 與美元兌新台幣匯率來自 Yahoo Finance，每月自動更新。<br>
+📌 配息基金以每月除息日淨值計價，配息 = 每單位配息 × 持有單位數；累積型基金以每月最後一個交易日淨值計價；SPY 使用調整後收盤價（已含股息再投入）。<br>
+📌 幣別與計價幣別不同時，以當月月底匯率換算。年化報酬率為「資金加權年化報酬率（IRR）」，已考慮每筆投入與現金配息的時間點。<br>
+📌 回測期間為兩檔基金都有資料的月份。部分級別成立較晚（例如聯博 AP、景順 M8），可回測的期間較短。
+</div>
+</div>
+
+<script>
+const DB = window.FUND_DB;
+const FUNDS = {};
+DB.funds.forEach(f => { FUNDS[f.key] = f; });
+const FX_MONTHS = Object.keys(DB.fx).sort();
+
+const CCY_SYM = { USD: '$', TWD: 'NT$' };
+const DEFAULT_AMT = { USD: { lump: 10000, dca: 500 }, TWD: { lump: 300000, dca: 10000 } };
+
+function monthsOf(f) { return Object.keys(f.data).sort(); }
+function rangeText(f) {
+  const ms = monthsOf(f);
+  return `資料期間：${ms[0]} ～ ${ms[ms.length-1]}（${ms.length} 個月）・${f.ccy === 'TWD' ? '新台幣' : '美元'}計價`;
+}
+
+function fxAt(ym) {
+  if (DB.fx[ym]) return DB.fx[ym];
+  let v = null;
+  for (const m of FX_MONTHS) { if (m <= ym) v = DB.fx[m]; else break; }
+  return v || DB.fx[FX_MONTHS[0]];
+}
+function conv(ccy, base, ym) {
+  if (ccy === base) return 1;
+  return ccy === 'USD' ? fxAt(ym) : 1 / fxAt(ym);
+}
+
+function el(id) { return document.getElementById(id); }
+
+function fillFundSelects() {
+  const divs = DB.funds.filter(f => f.type === 'div');
+  const accs = DB.funds.filter(f => f.type === 'acc');
+  divs.forEach(f => el('fundA').add(new Option(`${f.name}（${monthsOf(f)[0]} 起）`, f.key)));
+  accs.forEach(f => el('fundB').add(new Option(`${f.name}（${monthsOf(f)[0]} 起）`, f.key)));
+  el('fundA').value = 'allianz_am';
+  el('fundB').value = 'spy';
+  el('updated').textContent = `資料更新：${DB.updated}`;
+}
+
+function overlapMonths() {
+  const a = FUNDS[el('fundA').value], b = FUNDS[el('fundB').value];
+  return monthsOf(a).filter(ym => ym in b.data);
+}
+
+function initDates() {
+  const a = FUNDS[el('fundA').value], b = FUNDS[el('fundB').value];
+  el('rangeA').textContent = rangeText(a);
+  el('rangeB').textContent = rangeText(b);
+  const ms = overlapMonths();
+  const prevStart = el('startDate').selectedOptions[0]?.text;
+  const prevEnd = el('endDate').selectedOptions[0]?.text;
+  el('startDate').innerHTML = '';
+  el('endDate').innerHTML = '';
+  ms.forEach(ym => { el('startDate').add(new Option(ym, ym)); el('endDate').add(new Option(ym, ym)); });
+  if (!ms.length) return;
+  el('startDate').value = prevStart && ms.includes(prevStart) ? prevStart : ms[0];
+  el('endDate').value = prevEnd && ms.includes(prevEnd) ? prevEnd : ms[ms.length - 1];
+}
+
+function updateAmountLabel(resetAmount) {
+  const base = el('baseCcy').value, type = el('investType').value;
+  el('amountLabel').textContent = (type === 'lump' ? '單筆投入金額' : '每月定額') + `（${base}）`;
+  if (resetAmount) el('amount').value = DEFAULT_AMT[base][type];
+}
+
+el('fundA').addEventListener('change', initDates);
+el('fundB').addEventListener('change', initDates);
+el('investType').addEventListener('change', () => updateAmountLabel(true));
+el('baseCcy').addEventListener('change', () => updateAmountLabel(true));
+el('allocSlider').addEventListener('input', function() {
+  el('allocLabel').textContent = this.value + '%';
+  el('allocLabelB').textContent = (100 - this.value) + '%';
+});
+
+fillFundSelects();
+initDates();
+
+let chart = null;
+let SYM = '$';
+function fmt(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function money(n) { return SYM + fmt(n); }
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+
+// Money-weighted annual return from monthly cash flows (negative = paid in).
+function annualIRR(flows) {
+  const npv = r => flows.reduce((s, cf, i) => s + cf / Math.pow(1 + r, i), 0);
+  let lo = -0.99, hi = 1;
+  if (npv(lo) * npv(hi) > 0) return NaN;
+  for (let k = 0; k < 200; k++) {
+    const mid = (lo + hi) / 2;
+    if (npv(lo) * npv(mid) <= 0) hi = mid; else lo = mid;
+  }
+  return (Math.pow(1 + (lo + hi) / 2, 12) - 1) * 100;
+}
+
+function runSimulation() {
+  const A = FUNDS[el('fundA').value], B = FUNDS[el('fundB').value];
+  const base = el('baseCcy').value;
+  SYM = CCY_SYM[base];
+  const isLump = el('investType').value === 'lump';
+  const amount = parseFloat(el('amount').value);
+  const allocA = parseInt(el('allocSlider').value) / 100;
+  const allocB = 1 - allocA;
+  const doRebalance = el('rebalance').checked;
+  const feeRate = el('deductFee').checked ? (parseFloat(el('feeRate').value) || 0) / 100 : 0;
+  const divAction = el('dividendAction').value;
+  const startYm = el('startDate').value, endYm = el('endDate').value;
+
+  if (!(amount > 0)) { alert('請輸入投入金額'); return; }
+  if (!startYm || startYm >= endYm) { alert('起始月份必須早於結束月份'); return; }
+  const timeline = overlapMonths().filter(ym => ym >= startYm && ym <= endYm);
+  const months = [], rebalanceLog = [], flows = [];
+  let unitsA = 0, unitsB = 0, totalInvested = 0, totalDiv = 0, cashDiv = 0;
+
+  timeline.forEach((ym, i) => {
+    const [navA, dpuA] = A.data[ym];
+    const [navB] = B.data[ym];
+    const pA = navA * conv(A.ccy, base, ym);
+    const pB = navB * conv(B.ccy, base, ym);
+    const dA = dpuA * conv(A.ccy, base, ym);
+
+    let invest = 0, flow = 0, rebalanced = false;
+    if (i === 0 || !isLump) {
+      invest = amount;
+      totalInvested += amount;
+      flow -= amount;
+      const net = amount * (1 - feeRate);
+      unitsA += net * allocA / pA;
+      unitsB += net * allocB / pB;
+    }
+
+    const monthDiv = unitsA * dA;
+    totalDiv += monthDiv;
+    if (divAction === 'reinvest') unitsA += monthDiv / pA;
+    else if (divAction === 'toB') unitsB += monthDiv / pB;
+    else { cashDiv += monthDiv; flow += monthDiv; }
+
+    if (doRebalance && i > 0 && ym.slice(5) === '01' && allocA > 0 && allocB > 0) {
+      const vA = unitsA * pA, vB = unitsB * pB, tot = vA + vB;
+      rebalanceLog.push({ ym, beforeA: vA, beforeB: vB, afterA: tot * allocA, afterB: tot * allocB, moved: Math.abs(tot * allocA - vA) });
+      unitsA = tot * allocA / pA;
+      unitsB = tot * allocB / pB;
+      rebalanced = true;
+    }
+
+    const valueA = unitsA * pA, valueB = unitsB * pB;
+    flows.push(flow);
+    months.push({ ym, navA, navB, pA, pB, unitsA, unitsB, valueA, valueB, total: valueA + valueB,
+      invest, monthDiv, cashDiv, totalInvested, rebalanced });
+  });
+
+  if (months.length < 2) { alert('所選期間資料不足'); return; }
+
+  const last = months[months.length - 1];
+  flows[flows.length - 1] += last.total;
+  const grand = last.total + cashDiv;
+  const totalReturn = (grand / totalInvested - 1) * 100;
+  const irr = annualIRR(flows);
+  const years = (months.length - 1) / 12;
+
+  el('comboText').innerHTML =
+    `<b class="green">${A.name}</b> ${Math.round(allocA*100)}% ＋ <b class="orange">${B.name}</b> ${Math.round(allocB*100)}%<br>` +
+    `${months[0].ym} ～ ${last.ym}（約 ${years.toFixed(1)} 年）・${isLump ? '單筆' : '每月定額'} ${money(amount)}・以${base === 'TWD' ? '新台幣' : '美元'}計算`;
+
+  const divLabel = { cash: '累計配息（領現金）', reinvest: '累計配息（已再投入）', toB: '累計配息（已轉入累積型）' }[divAction];
+  el('statCards').innerHTML = `
+    <div class="stat-card"><div class="stat-label">總投入金額</div><div class="stat-value blue">${money(totalInvested)}</div></div>
+    <div class="stat-card"><div class="stat-label">帳戶現值</div><div class="stat-value ${last.total >= totalInvested ? 'green' : 'red'}">${money(last.total)}</div></div>
+    <div class="stat-card"><div class="stat-label">${divLabel}</div><div class="stat-value orange">${money(totalDiv)}</div></div>
+    <div class="stat-card"><div class="stat-label">帳戶＋現金配息 總價值</div><div class="stat-value ${grand >= totalInvested ? 'green' : 'red'}">${money(grand)}</div></div>
+    <div class="stat-card"><div class="stat-label">總報酬率</div><div class="stat-value ${totalReturn >= 0 ? 'green' : 'red'}">${fmtPct(totalReturn)}</div></div>
+    <div class="stat-card"><div class="stat-label">年化報酬率（IRR）</div><div class="stat-value ${irr >= 0 ? 'green' : 'red'}">${isNaN(irr) ? '—' : fmtPct(irr)}</div></div>`;
+
+  if (chart) chart.destroy();
+  const line = (label, data, color, extra = {}) => ({ label, data, borderColor: color, pointRadius: 0, borderWidth: 1.5, fill: false, tension: .3, ...extra });
+  const datasets = [
+    line('帳戶總價值', months.map(m => m.total), '#1565c0', { backgroundColor: 'rgba(21,101,192,.08)', fill: true, borderWidth: 2 }),
+    line('總投入成本', months.map(m => m.totalInvested), '#666', { borderDash: [5, 5], borderWidth: 1, tension: 0 }),
+  ];
+  if (allocA > 0 && (allocB > 0 || divAction === 'toB')) {
+    datasets.push(line('配息基金部位', months.map(m => m.valueA), '#2e7d32'));
+    datasets.push(line('累積型部位', months.map(m => m.valueB), '#e65100'));
+  }
+  if (divAction === 'cash') datasets.push(line('累計現金配息', months.map(m => m.cashDiv), '#c62828'));
+
+  chart = new Chart(el('mainChart').getContext('2d'), {
+    type: 'line',
+    data: { labels: months.map(m => m.ym), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: '#444', font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 14 }, grid: { color: '#e0e4e8' } },
+        y: { ticks: { color: '#888', callback: v => SYM + v.toLocaleString() }, grid: { color: '#e0e4e8' } }
+      }
+    }
+  });
+
+  const navCell = (nav, f) => `${f.ccy === 'TWD' ? 'NT$' : '$'}${nav.toFixed(nav >= 1000 ? 2 : 4)}`;
+  let h = `<table><thead><tr><th>月份</th><th>配息基金淨值</th><th>累積型淨值</th><th>配息基金市值</th><th>累積型市值</th><th>帳戶總值</th><th>當月配息</th><th>累計現金配息</th></tr></thead><tbody>`;
+  months.forEach((m, i) => {
+    h += `<tr${m.rebalanced ? ' style="background:#e8f5e9"' : ''}><td>${m.ym}${m.rebalanced ? ' 🔄' : ''}${m.invest && i > 0 ? ' 💰' : ''}</td>
+      <td>${navCell(m.navA, A)}</td><td>${navCell(m.navB, B)}</td>
+      <td>${money(m.valueA)}</td><td>${money(m.valueB)}</td><td>${money(m.total)}</td>
+      <td>${money(m.monthDiv)}</td><td>${divAction === 'cash' ? money(m.cashDiv) : '<span style="color:#999">再投入</span>'}</td></tr>`;
+  });
+  el('monthlyTable').innerHTML = h + '</tbody></table>';
+
+  let y = `<table><thead><tr><th>年度</th><th>年初帳戶值</th><th>年末帳戶值</th><th>年度投入</th><th>年度配息</th><th>年度報酬率</th></tr></thead><tbody>`;
+  const byYear = {};
+  months.forEach(m => (byYear[m.ym.slice(0, 4)] ||= []).push(m));
+  let prevEnd = null;
+  Object.keys(byYear).sort().forEach(yr => {
+    const ms = byYear[yr], lastM = ms[ms.length - 1];
+    const startVal = prevEnd ?? ms[0].total;
+    const inv = ms.reduce((s, m) => s + m.invest, 0) - (prevEnd === null ? ms[0].invest : 0);
+    const div = ms.reduce((s, m) => s + m.monthDiv, 0);
+    const cashPart = divAction === 'cash' ? div : 0;
+    const ret = startVal > 0 ? ((lastM.total + cashPart - inv) / startVal - 1) * 100 : 0;
+    y += `<tr><td>${yr}</td><td>${money(startVal)}</td><td>${money(lastM.total)}</td><td>${money(ms.reduce((s, m) => s + m.invest, 0))}</td><td>${money(div)}</td><td class="${ret >= 0 ? 'green' : 'red'}">${fmtPct(ret)}</td></tr>`;
+    prevEnd = lastM.total;
+  });
+  el('yearlyTable').innerHTML = y + '</tbody></table>';
+
+  let r = `<table><thead><tr><th>月份</th><th>調整前-配息</th><th>調整前-累積</th><th>調整後-配息</th><th>調整後-累積</th><th>調整金額</th></tr></thead><tbody>`;
+  if (!rebalanceLog.length) r += '<tr><td colspan="6" style="text-align:center;color:#666">無再平衡紀錄</td></tr>';
+  rebalanceLog.forEach(x => { r += `<tr><td>${x.ym}</td><td>${money(x.beforeA)}</td><td>${money(x.beforeB)}</td><td>${money(x.afterA)}</td><td>${money(x.afterB)}</td><td>${money(x.moved)}</td></tr>`; });
+  el('rebalTable').innerHTML = r + '</tbody></table>';
+
+  el('results').style.display = 'block';
+  el('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function switchTab(tab) {
+  const tabs = ['monthly', 'yearly', 'rebal'];
+  tabs.forEach(t => el('tab-' + t).classList.toggle('hidden', t !== tab));
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
+}
+</script>
+
+<footer style="text-align:center;padding:32px 20px 24px;font-size:.8rem;color:#999;line-height:1.8">
+<p style="margin-bottom:4px">免責聲明：本試算結果僅供參考，實際金額以相關主管機關核算為準。投資具有風險，請謹慎評估。</p>
+<p>Copyright&copy; 徐承庚｜NLP豐盛你的人生</p>
+</footer>
+</body>
+</html>
