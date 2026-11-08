@@ -148,6 +148,8 @@ MULTI_FUNDS = [
     {"key": "br_fin_a2",    "cnyes": "B09,102", "type": "acc", "ccy": "USD", "name": "貝萊德世界金融基金 A2（美元）"},
     {"key": "allianz_twtech", "cnyes": "A36004", "type": "acc", "ccy": "TWD", "name": "安聯台灣科技基金（新台幣）"},
     {"key": "allianz_twdam",  "cnyes": "A36001", "type": "acc", "ccy": "TWD", "name": "安聯台灣大壩基金 A類型（新台幣）"},
+    {"key": "br_data_a2",    "cnyes": "B09,324", "type": "acc", "ccy": "USD", "name": "貝萊德全球智慧數據股票入息基金 A2（美元）"},
+    {"key": "ab_us_acc",     "cnyes": "B03,029", "type": "acc", "ccy": "USD", "name": "聯博美國成長基金 A股（美元）"},
     {"key": "schroder_cycle", "cnyes": "A16IYCv", "type": "acc", "ccy": "TWD", "name": "施羅德全週期成長多重資產基金 A累積型（新台幣）"},
 ]
 
@@ -244,6 +246,19 @@ def yahoo_monthly(ticker, start="2003-01-01"):
     return {idx.strftime("%Y-%m"): round(float(row["Close"]), 4) for idx, row in hist.iterrows()}
 
 
+def yahoo_fx_monthly(ticker, start="2003-01-01"):
+    """Month-end FX from daily closes; Yahoo occasionally reports a rate off by 10x."""
+    import yfinance as yf
+    close = yf.Ticker(ticker).history(start=start, interval="1d")["Close"]
+    median = close.rolling(21, center=True, min_periods=5).median()
+    bad = (close / median - 1).abs() > 0.15
+    if bad.any():
+        print(f"  {ticker}: dropped {int(bad.sum())} bad daily quotes")
+    clean = close[~bad]
+    monthly = clean.groupby(clean.index.strftime("%Y-%m")).last()
+    return {ym: round(float(v), 4) for ym, v in monthly.items()}
+
+
 def build_multi_fund_data():
     funds = []
     for f in MULTI_FUNDS:
@@ -260,7 +275,7 @@ def build_multi_fund_data():
     spy = yahoo_monthly("SPY")
     funds.append({"key": "spy", "cnyes": "", "type": "acc", "ccy": "USD",
                   "name": "S&P 500 ETF（SPY，含息）", "data": {ym: [v, 0] for ym, v in spy.items()}})
-    fx = yahoo_monthly("TWD=X")
+    fx = yahoo_fx_monthly("TWD=X")
     print(f"  SPY: {len(spy)} months, USD/TWD: {len(fx)} months")
 
     payload = {"updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "fx": fx, "funds": funds}
