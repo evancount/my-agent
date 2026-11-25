@@ -151,6 +151,8 @@ MULTI_FUNDS = [
     {"key": "schroder_cycle", "cnyes": "A16IYCv", "type": "acc", "ccy": "TWD", "name": "施羅德全週期成長多重資產基金 A累積型（新台幣）"},
 ]
 
+TWSE_ETF_LAB_FILE = "taiwan-leverage-etf-lab.html"
+
 DAY = 86400
 WINDOW = 3650 * DAY  # performance endpoint returns at most ~10 years per call
 
@@ -292,6 +294,59 @@ def build_multi_fund_data():
     return True
 
 
+def update_twse_etf_lab():
+    """Update TWSE monthly close data in taiwan-leverage-etf-lab.html."""
+    import yfinance as yf
+
+    with open(TWSE_ETF_LAB_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    m = re.search(r'const MDATA=\[(.*?)\];', content)
+    if not m:
+        print(f"  {TWSE_ETF_LAB_FILE}: MDATA not found, skipping")
+        return False
+
+    existing = json.loads("[" + m.group(1) + "]")
+    last_ym = existing[-1][0]  # e.g. "2026-06"
+    print(f"  Current data ends at {last_ym}, {len(existing)} months")
+
+    hist = yf.Ticker("^TWII").history(start="1996-01-01", interval="1d")
+    monthly = hist["Close"].groupby(hist.index.strftime("%Y-%m")).last()
+
+    new_entries = []
+    for ym, close in monthly.items():
+        if ym > last_ym:
+            today = datetime.now(timezone.utc)
+            current_ym = today.strftime("%Y-%m")
+            if ym == current_ym:
+                continue  # skip incomplete current month
+            new_entries.append([ym, round(float(close), 2)])
+
+    if not new_entries:
+        print(f"  {TWSE_ETF_LAB_FILE}: no new months to add")
+        return False
+
+    # Also correct the last existing entry if it differs
+    if last_ym in dict(monthly.items()):
+        correct_val = round(float(monthly[last_ym]), 2)
+        if abs(existing[-1][1] - correct_val) > 1.0:
+            existing[-1][1] = correct_val
+            print(f"  Corrected {last_ym}: {existing[-1][1]} -> {correct_val}")
+
+    updated = existing + new_entries
+    mdata_str = json.dumps(updated, separators=(", ", ", "), ensure_ascii=False)
+    # Format as the original: [["YYYY-MM", value], ...]
+    mdata_str = "const MDATA=" + mdata_str + ";"
+
+    content = re.sub(r'const MDATA=\[.*?\];', mdata_str, content)
+
+    with open(TWSE_ETF_LAB_FILE, "w", encoding="utf-8") as f:
+        f.write(content)
+    last_new = new_entries[-1][0]
+    print(f"  {TWSE_ETF_LAB_FILE}: added {len(new_entries)} months (up to {last_new})")
+    return True
+
+
 def main():
     print("Fetching AM dividend data...")
     am_raw = fetch_all_dividends(FUNDS["AM"])
@@ -319,6 +374,13 @@ def main():
     print("Building multi-fund simulator data...")
     if build_multi_fund_data():
         changed = True
+
+    print("Updating TWSE ETF lab data...")
+    try:
+        if update_twse_etf_lab():
+            changed = True
+    except Exception as e:
+        print(f"  TWSE ETF lab update failed: {e}")
 
     if changed:
         print("Done - files updated.")
